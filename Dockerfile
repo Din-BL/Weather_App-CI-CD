@@ -1,13 +1,21 @@
-FROM python:3.12.3
+# Use the official Python image from the Docker Hub
+FROM python:3.8-slim
 
-WORKDIR /weather_app
+# Set the working directory in the container
+WORKDIR /app
 
-RUN pip install --upgrade pip
+# Copy the requirements file into the container
+COPY requirements.txt .
 
-RUN pip install flask requests python-dotenv
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /weather_app
+# Install pytest
+RUN pip install pytest
 
+# Copy the rest of the application code into the container
+COPY . .
+
+# Command to run the application (optional if you run the app separately)
 CMD ["python", "app.py"]
-
 

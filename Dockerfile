@@ -6,6 +6,8 @@ RUN pip install --upgrade pip
 
 RUN pip install flask requests python-dotenv
 
-COPY weather_app /weather_app
+COPY . /weather_app
 
 CMD ["python", "app.py"]
+
+

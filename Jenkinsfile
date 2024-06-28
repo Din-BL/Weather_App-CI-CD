@@ -74,7 +74,7 @@ pipeline {
                 echo 'Debugging Information:'
                 echo "Jenkins Home: ${JENKINS_HOME}"
                 echo 'Installed Plugins:'
-                sh 'jenkins-plugin-cli --list'
+                sh 'ls -alh $JENKINS_HOME/plugins'
                 echo 'Environment Variables:'
                 sh 'printenv'
             }
@@ -85,7 +85,7 @@ pipeline {
                 echo 'Pipeline completed successfully.'
                 echo 'Debugging Information:'
                 echo "Credentials ID: ${env.SSH_Key}"
-                sh 'jenkins-plugin-cli --list'
+                sh 'ls -alh $JENKINS_HOME/plugins'
                 sh 'printenv'
                 sshagent(credentials: ['SSH_Key']) {
                     sh 'ssh -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"'
@@ -99,7 +99,7 @@ pipeline {
                 echo 'Pipeline failed.'
                 echo 'Debugging Information:'
                 echo "Credentials ID: ${env.SSH_Key}"
-                sh 'jenkins-plugin-cli --list'
+                sh 'ls -alh $JENKINS_HOME/plugins'
                 sh 'printenv'
                 slackSend (channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)
             }

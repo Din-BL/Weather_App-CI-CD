@@ -20,10 +20,8 @@ pipeline {
                         sudo docker stop weather_app || true
                         sudo docker rm weather_app || true
                     fi
-                    # Remove old images
-                    if sudo docker images -q weather_app; then
-                        sudo docker rmi -f \$(sudo docker images -q weather_app) || true
-                    fi
+                    # Remove all old images, including dangling images
+                    sudo docker image prune -af || true
                     """
                 }
             }

@@ -1,8 +1,8 @@
 pipeline {
     agent { label 'agent' }
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials') // Using your Docker Hub credentials ID
-        SLACK_CREDENTIAL_ID = 'Slack_Token' 
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        SLACK_CREDENTIAL_ID = 'Slack_Token'
     }
     stages {
         stage('Clone Repository') {
@@ -59,7 +59,6 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying...'
-                    // Run the new container
                     sh """
                     sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:latest
                     """
@@ -71,7 +70,6 @@ pipeline {
         success {
             script {
                 echo 'Pipeline completed successfully.'
-                // Trigger deployment on the production server
                 sshagent(credentials: ['SSH_Key']) {  
                     sh 'ssh -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"'
                 }

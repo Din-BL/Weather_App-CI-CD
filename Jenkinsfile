@@ -9,21 +9,21 @@ pipeline {
             steps {
                 git branch: 'main', url: 'http://172.31.52.252/root/weather_app.git'
             }
-        }
-        stage('Build') {
-            steps {
-                script {
-                    echo 'Building...'
-                    sh 'sudo docker build -t weather_app .'
-                }
-            }
-        }
+        }       
         stage('Test') {
             steps {
                 script {
                     echo 'Testing...'
                     // Uncomment the next line to run tests inside the Docker container
                     // sh 'docker run --rm weather_app pytest'
+                }
+            }
+        }     
+        stage('Build') {
+            steps {
+                script {
+                    echo 'Building...'
+                    sh 'sudo docker build -t weather_app .'
                 }
             }
         }
@@ -43,7 +43,19 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying...'
-                    sh 'sudo docker run --name weather_app -d -p 5000:5000 weather_app'
+                    // Stop and remove the old container if it exists
+                    sh """
+                    if sudo docker ps -a | grep weather_app; then
+                        sudo docker stop weather_app || true
+                        sudo docker rm weather_app || true
+                    fi
+                    // Remove the old image if it exists
+                    if sudo docker images -q weather_app; then
+                        sudo docker rmi weather_app || true
+                    fi
+                    // Run the new container
+                    sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:latest
+                    """
                 }
             }
         }
@@ -63,3 +75,4 @@ pipeline {
         }
     }
 }
+

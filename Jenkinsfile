@@ -68,7 +68,8 @@ pipeline {
     }
     post {
         success {
-            node('master') {
+            agent { label 'master' }
+            steps {
                 script {
                     echo 'Pipeline completed successfully.'
                     sshagent(credentials: ['SSH_Key']) {  
@@ -79,7 +80,8 @@ pipeline {
             }
         }
         failure {
-            node('master') {
+            agent { label 'master' }
+            steps {
                 script {
                     echo 'Pipeline failed.'
                     slackSend (channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)

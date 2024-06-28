@@ -72,9 +72,6 @@ pipeline {
             script {
                 echo 'Running post actions on master node...'
                 echo 'Debugging Information:'
-                echo "Jenkins Home: ${JENKINS_HOME}"
-                echo 'Installed Plugins:'
-                sh 'ls -alh $JENKINS_HOME/plugins'
                 echo 'Environment Variables:'
                 sh 'printenv'
             }
@@ -84,11 +81,11 @@ pipeline {
             script {
                 echo 'Pipeline completed successfully.'
                 echo 'Debugging Information:'
-                echo "Credentials ID: ${env.SSH_Key}"
-                sh 'ls -alh $JENKINS_HOME/plugins'
+                echo "SSH Credentials ID: ${env.SSH_Key}"
+                echo 'Environment Variables:'
                 sh 'printenv'
                 sshagent(credentials: ['SSH_Key']) {
-                    sh 'ssh -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"'
+                    sh 'ssh -vvv -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"'
                 }
                 slackSend (channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
@@ -98,8 +95,8 @@ pipeline {
             script {
                 echo 'Pipeline failed.'
                 echo 'Debugging Information:'
-                echo "Credentials ID: ${env.SSH_Key}"
-                sh 'ls -alh $JENKINS_HOME/plugins'
+                echo "SSH Credentials ID: ${env.SSH_Key}"
+                echo 'Environment Variables:'
                 sh 'printenv'
                 slackSend (channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)
             }

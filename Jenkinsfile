@@ -49,11 +49,11 @@ pipeline {
                         sudo docker stop weather_app || true
                         sudo docker rm weather_app || true
                     fi
-                    // Remove the old image if it exists
+                    # Remove the old image if it exists
                     if sudo docker images -q weather_app; then
                         sudo docker rmi weather_app || true
                     fi
-                    // Run the new container
+                    # Run the new container
                     sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:latest
                     """
                 }

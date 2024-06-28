@@ -82,11 +82,11 @@ pipeline {
             script {
                 echo 'Pipeline completed successfully.'
                 echo 'Debugging Information:'
-                echo "Using SSH Key ID: ${SSH_KEY}"
+                echo "Using SSH Key ID: ${ssh-credentials-master}"
                 echo 'Environment Variables:'
                 sh 'printenv'
                 sh """
-                echo "${SSH_KEY}" > /tmp/ssh_key
+                echo "${ssh-credentials-master}" > /tmp/ssh_key
                 chmod 600 /tmp/ssh_key
                 ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"
                 rm -f /tmp/ssh_key
@@ -99,7 +99,7 @@ pipeline {
             script {
                 echo 'Pipeline failed.'
                 echo 'Debugging Information:'
-                echo "Using SSH Key ID: ${SSH_KEY}"
+                echo "Using SSH Key ID: ${ssh-credentials-master}"
                 echo 'Environment Variables:'
                 sh 'printenv'
                 slackSend (channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)

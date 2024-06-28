@@ -71,20 +71,18 @@ pipeline {
         success {
             script {
                 echo 'Pipeline completed successfully.'
-            }
-              // Trigger deployment on the production server
-            node('master') {
+                // Trigger deployment on the production server
                 sshagent(credentials: ['SSH_Key']) {  
                     sh 'ssh -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"'
                 }
+                slackSend (channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
-             slackSend (channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)
         }
         failure {
             script {
                 echo 'Pipeline failed.'
+                slackSend (channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
-            slackSend (channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)
         }
     }
 }

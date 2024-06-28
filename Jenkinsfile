@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         SLACK_CREDENTIAL_ID = 'Slack_Token'
-        SSH_KEY = credentials('SSH_Key') // Make sure this matches the ID of your SSH key credentials
+        SSH_KEY = credentials('SSH_Key') // Ensure this is the correct credentials ID
     }
     stages {
         stage('Clone Repository') {
@@ -79,27 +79,22 @@ pipeline {
         }
         success {
             agent { label 'master' }
-            script {
-                echo 'Pipeline completed successfully.'
-                echo 'Debugging Information:'
-                echo "Using SSH Key ID: ${ssh-credentials-master}"
-                echo 'Environment Variables:'
-                sh 'printenv'
-                sh """
-                echo "${ssh-credentials-master}" > /tmp/ssh_key
-                chmod 600 /tmp/ssh_key
-                ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"
-                rm -f /tmp/ssh_key
-                """
-                slackSend (channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)
+            withCredentials([sshUserPrivateKey(credentialsId: 'SSH_Key', keyFileVariable: 'SSH_KEY_FILE')]) {
+                script {
+                    echo 'Pipeline completed successfully.'
+                    echo 'Environment Variables:'
+                    sh 'printenv'
+                    sh """
+                    ssh -i $SSH_KEY_FILE -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"
+                    """
+                    slackSend (channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)
+                }
             }
         }
         failure {
             agent { label 'master' }
             script {
                 echo 'Pipeline failed.'
-                echo 'Debugging Information:'
-                echo "Using SSH Key ID: ${ssh-credentials-master}"
                 echo 'Environment Variables:'
                 sh 'printenv'
                 slackSend (channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)

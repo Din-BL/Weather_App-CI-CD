@@ -75,7 +75,7 @@ pipeline {
               // Trigger deployment on the production server
             node('master') {
                 sshagent(credentials: ['SSH_Key']) {  
-                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.22.127 "bash /home/ec2-user/production/image_script.sh"'
+                    sh 'ssh -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"'
                 }
             }
              slackSend (channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)

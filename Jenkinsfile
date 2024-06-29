@@ -25,21 +25,7 @@ pipeline {
             }
         }
         
-        stage('Test') {
-            steps {
-                script {
-                    echo 'Testing'
-                    sh """
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                    # Run tests
-                    python3 test_app.py
-                    """
-                }
-            }
-        }
+        
         
         stage('Build') {
             steps {

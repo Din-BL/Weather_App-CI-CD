@@ -25,6 +25,21 @@ pipeline {
                 git branch: 'main', url: 'http://172.31.52.252/root/weather_app.git'
             }
         }
+         stage('Test') {
+            steps {
+                script {
+                echo 'Testing'
+                sh """
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip --break-system-packages
+                pip install -r requirements.txt --break-system-packages
+                # Run tests
+                python3 test_app.py
+                """
+                }
+            }
+        }
         stage('Build') {
             steps {
                 script {

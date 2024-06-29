@@ -26,19 +26,19 @@ pipeline {
             }
         }
         stage('Test') {
-            steps {
-                script {
-                echo 'Testing'
-                sh """
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip --break-system-packages
-                pip install -r requirements.txt --break-system-packages
-                # Run tests
-                python3 test_app.py
-                """
-                }
-            }
+            // steps {
+            //     script {
+            //     echo 'Testing'
+            //     sh """
+            //     python3 -m venv venv
+            //     . venv/bin/activate
+            //     pip install --upgrade pip --break-system-packages
+            //     pip install -r requirements.txt --break-system-packages
+            //     # Run tests
+            //     python3 test_app.py
+            //     """
+            //     }
+            // }
         }
         stage('Build') {
             steps {

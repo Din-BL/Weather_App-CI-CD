@@ -28,9 +28,12 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    echo 'Testing...'
-                    // Uncomment the next line to run tests inside the Docker container
-                    // sh 'docker run --rm weather_app pytest'
+                    echo 'Testing'
+                    sh """
+                    # Install dependencies
+                    pip install -r requirements.txt
+                    python3 test_app.py
+                    """
                 }
             }
         }     

@@ -42,11 +42,10 @@ pipeline {
                     if [ -f "./venv/bin/pip" ]; then
                         echo "Pip found in virtual environment."
                     else
-                        echo "Pip not found in virtual environment. Installing pip using apt."
-                        sudo apt update
-                        sudo apt install -y python3-pip
+                        echo "Pip not found in virtual environment. Installing pip using ensurepip."
+                        python3 -m ensurepip --upgrade
                         if [ $? -ne 0 ]; then
-                            echo "Failed to install pip using apt."
+                            echo "Failed to install pip using ensurepip."
                             exit 1
                         fi
                     fi

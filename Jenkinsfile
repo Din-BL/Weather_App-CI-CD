@@ -11,13 +11,11 @@ pipeline {
                 script {
                     echo 'Cleaning up old Docker containers and images'
                     sh """
-                    # Stop and remove the old container if it exists
-                    if sudo docker ps -a | grep weather_app; then
-                        sudo docker stop weather_app
-                        sudo docker rm weather_app
-                    fi
+                    # Stop and remove the old container
+                    sudo docker stop weather_app || true
+                    sudo docker rm weather_app || true
                     # Remove old image
-                    sudo docker rmi dinbl/weather_app:latest
+                    sudo docker rmi dinbl/weather_app:latest || true
                     """
                 }
             }
@@ -47,7 +45,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    echo 'Pushing to Docker Hub...'
+                    echo 'Pushing to Docker Hub'
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
                     sudo docker push dinbl/weather_app:latest

@@ -6,11 +6,6 @@ pipeline {
         SSH_KEY = credentials('SSH_Key') 
     }
     stages {
-        stage('Clone Repository') {
-            steps {
-                git branch: 'main', url: 'http://172.31.52.252/root/weather_app.git'
-            }
-        }
         stage('Clean') {
             steps {
                 script {
@@ -18,13 +13,18 @@ pipeline {
                     sh """
                     # Stop and remove the old container if it exists
                     if sudo docker ps -a | grep weather_app; then
-                        sudo docker stop weather_app || true
-                        sudo docker rm weather_app || true
+                        sudo docker stop weather_app
+                        sudo docker rm weather_app
                     fi
-                    # Remove all old images, including dangling images
-                    sudo docker image prune -af || true
+                    # Remove old image
+                    sudo docker rmi dinbl/weather_app:latest
                     """
                 }
+            }
+        }
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'http://172.31.52.252/root/weather_app.git'
             }
         }
         stage('Test') {

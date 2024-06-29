@@ -47,19 +47,19 @@ pipeline {
                     fi
 
                     ./venv/bin/pip install --upgrade pip
-                    if [ $? -ne 0 ]; then
+                    if [ \$? -ne 0 ]; then
                         echo "Failed to upgrade pip."
                         exit 1
                     fi
 
                     ./venv/bin/pip install -r requirements.txt
-                    if [ $? -ne 0 ]; then
+                    if [ \$? -ne 0 ]; then
                         echo "Failed to install requirements."
                         exit 1
                     fi
 
                     ./venv/bin/python3 test_app.py
-                    if [ $? -eq 0 ]; then
+                    if [ \$? -eq 0 ]; then
                         echo "Tests passed successfully."
                     else
                         echo "Tests failed."

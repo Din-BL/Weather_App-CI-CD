@@ -50,6 +50,12 @@ pipeline {
                         fi
                     fi
 
+                    echo "Virtual environment directory contents:"
+                    ls -R ./venv
+
+                    echo "Environment variables:"
+                    env
+
                     ./venv/bin/pip install --upgrade pip
                     if [ $? -ne 0 ]; then
                         echo "Failed to upgrade pip."

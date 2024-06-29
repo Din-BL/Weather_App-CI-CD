@@ -30,6 +30,7 @@ pipeline {
                 script {
                     echo 'Testing'
                     sh '''
+                    # Create virtual environment
                     python3 -m venv venv
                     if [ -d "venv" ]; then
                         echo "Virtual environment created successfully."
@@ -38,7 +39,10 @@ pipeline {
                         exit 1
                     fi
 
+                    # Activate virtual environment
                     . venv/bin/activate
+
+                    # Check for pip in virtual environment
                     if [ -f "./venv/bin/pip" ]; then
                         echo "Pip found in virtual environment."
                     else
@@ -50,19 +54,23 @@ pipeline {
                         fi
                     fi
 
-                    echo "Virtual environment directory contents:"
-                    ls -R ./venv
+                    # Debugging: list contents of venv/bin
+                    echo "Contents of venv/bin:"
+                    ls -l ./venv/bin
 
-                    echo "Environment variables:"
-                    env
+                    # Debugging: check Python version
+                    echo "Python version:"
+                    ./venv/bin/python --version
 
-                    ./venv/bin/pip install --upgrade pip
+                    # Upgrade pip
+                    ./venv/bin/python -m pip install --upgrade pip
                     if [ $? -ne 0 ]; then
                         echo "Failed to upgrade pip."
                         exit 1
                     fi
 
-                    ./venv/bin/pip install -r requirements.txt
+                    # Install requirements
+                    ./venv/bin/python -m pip install -r requirements.txt
                     if [ $? -ne 0 ]; then
                         echo "Failed to install requirements."
                         exit 1

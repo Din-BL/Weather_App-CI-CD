@@ -14,7 +14,7 @@ pipeline {
         stage('Clean') {
             steps {
                 script {
-                    echo 'Cleaning up old Docker containers and images...'
+                    echo 'Cleaning up old Docker containers and images'
                     sh """
                     # Stop and remove the old container if it exists
                     if sudo docker ps -a | grep weather_app; then

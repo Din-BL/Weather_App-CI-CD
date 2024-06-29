@@ -32,10 +32,10 @@ pipeline {
                 sh """
                 python3 -m venv venv
                 . venv/bin/activate
-                pip install --upgrade pip --break-system-packages
-                pip install -r requirements.txt --break-system-packages
+                ./venv/bin/pip install --upgrade pip
+                ./venv/bin/pip install -r requirements.txt
                 # Run tests
-                python3 test_app.py
+                ./venv/bin/python3 test_app.py
                 """
                 }
             }

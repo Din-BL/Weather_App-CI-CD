@@ -29,60 +29,6 @@ pipeline {
             steps {
                 script {
                     echo 'Testing'
-                    sh '''
-                    # Create virtual environment
-                    python3 -m venv venv
-                    if [ -d "venv" ]; then
-                        echo "Virtual environment created successfully."
-                    else
-                        echo "Failed to create virtual environment."
-                        exit 1
-                    fi
-
-                    # Activate virtual environment
-                    . venv/bin/activate
-
-                    # Check for pip in virtual environment
-                    if [ -f "./venv/bin/pip" ]; then
-                        echo "Pip found in virtual environment."
-                    else
-                        echo "Pip not found in virtual environment. Installing pip using ensurepip."
-                        python3 -m ensurepip --upgrade
-                        if [ $? -ne 0 ]; then
-                            echo "Failed to install pip using ensurepip."
-                            exit 1
-                        fi
-                    fi
-
-                    # Debugging: list contents of venv/bin
-                    echo "Contents of venv/bin:"
-                    ls -l ./venv/bin
-
-                    # Debugging: check Python version
-                    echo "Python version:"
-                    ./venv/bin/python --version
-
-                    # Upgrade pip
-                    ./venv/bin/python -m pip install --upgrade pip
-                    if [ $? -ne 0 ]; then
-                        echo "Failed to upgrade pip."
-                        exit 1
-                    fi
-
-                    # Install requirements
-                    ./venv/bin/python -m pip install -r requirements.txt
-                    if [ $? -ne 0 ]; then
-                        echo "Failed to install requirements."
-                        exit 1
-                    fi
-
-                    # Run tests
-                    ./venv/bin/python test_app.py
-                    if [ $? -ne 0 ]; then
-                        echo "Tests failed."
-                        exit 1
-                    fi
-                    '''
                 }
             }
         }

@@ -61,7 +61,7 @@ pipeline {
          stage('Push to Docker Hub') {
             steps {
                 script {
-                    echo 'Pushing to Docker Hub'
+                    echo 'Pushing to Docker Hub...'
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
                     sudo docker push dinbl/weather_app:latest

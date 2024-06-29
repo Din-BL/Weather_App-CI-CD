@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building...'
-                    sh 'sudo docker build -t weather_app .'
+                    sh 'sudo docker build -t dinbl/weather_app:latest .'
                 }
             }
         }
@@ -50,7 +50,6 @@ pipeline {
                     echo 'Pushing to Docker Hub...'
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
-                    sudo docker tag weather_app dinbl/weather_app:latest
                     sudo docker push dinbl/weather_app:latest
                     """
                 }

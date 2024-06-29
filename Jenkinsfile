@@ -25,13 +25,12 @@ pipeline {
             }
         }
         
-        stage('Test') {
+       stage('Test') {
             steps {
                 script {
                     echo 'Testing'
-                    sh """
+                    sh '''
                     python3 -m venv venv
-                    . venv/bin/activate
                     if [ -d "venv" ]; then
                         echo "Virtual environment created successfully."
                     else
@@ -39,33 +38,38 @@ pipeline {
                         exit 1
                     fi
 
+                    . venv/bin/activate
                     if [ -f "./venv/bin/pip" ]; then
                         echo "Pip found in virtual environment."
                     else
-                        echo "Pip not found in virtual environment."
-                        exit 1
+                        echo "Pip not found in virtual environment. Installing pip using apt."
+                        sudo apt update
+                        sudo apt install -y python3-pip
+                        if [ $? -ne 0 ]; then
+                            echo "Failed to install pip using apt."
+                            exit 1
+                        fi
                     fi
 
                     ./venv/bin/pip install --upgrade pip
-                    if [ \$? -ne 0 ]; then
+                    if [ $? -ne 0 ]; then
                         echo "Failed to upgrade pip."
                         exit 1
                     fi
 
                     ./venv/bin/pip install -r requirements.txt
-                    if [ \$? -ne 0 ]; then
+                    if [ $? -ne 0 ]; then
                         echo "Failed to install requirements."
                         exit 1
                     fi
 
-                    ./venv/bin/python3 test_app.py
-                    if [ \$? -eq 0 ]; then
-                        echo "Tests passed successfully."
-                    else
+                    # Run tests
+                    ./venv/bin/python test_app.py
+                    if [ $? -ne 0 ]; then
                         echo "Tests failed."
                         exit 1
                     fi
-                    """
+                    '''
                 }
             }
         }

@@ -33,23 +33,23 @@ pipeline {
                 }
             }
         }
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    echo 'Pushing to Docker Hub'
-                    sh """
-                    echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
-                    sudo docker push dinbl/weather_app:latest
-                    """
-                }
-            }
-        }
         stage('Deploy') {
             steps {
                 script {
                     echo 'Deploying...'
                     sh """
                     sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:latest
+                    """
+                }
+            }
+        }
+         stage('Push to Docker Hub') {
+            steps {
+                script {
+                    echo 'Pushing to Docker Hub'
+                    sh """
+                    echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
+                    sudo docker push dinbl/weather_app:latest
                     """
                 }
             }

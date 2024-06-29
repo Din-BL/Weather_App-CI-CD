@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         SLACK_CREDENTIAL_ID = 'Slack_Token'
-        SSH_KEY = credentials('SSH_Key')
+        SSH_KEY = credentials('SSH_Master-Node')
     }
     stages {
         stage('Clean') {

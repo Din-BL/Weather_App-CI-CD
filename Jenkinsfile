@@ -25,49 +25,50 @@ pipeline {
                 git branch: 'main', url: 'http://172.31.52.252/root/weather_app.git'
             }
         }
+        
         stage('Test') {
-    steps {
-        script {
-            echo 'Testing'
-            sh """
-            python3 -m venv venv
-            if [ -d "venv" ]; then
-                echo "Virtual environment created successfully."
-            else
-                echo "Failed to create virtual environment."
-                exit 1
-            fi
+             steps {
+                script {
+                 echo 'Testing'
+                 sh """
+                 python3 -m venv venv
+                 if [ -d "venv" ]; then
+                    echo "Virtual environment created successfully."
+                    else
+                        echo "Failed to create virtual environment."
+                        exit 1
+                 fi
 
-            . venv/bin/activate
-            if [ -f "./venv/bin/pip" ]; then
-                echo "Pip found in virtual environment."
-            else
-                echo "Pip not found in virtual environment."
-                exit 1
-            fi
+                . venv/bin/activate
+                if [ -f "./venv/bin/pip" ]; then
+                    echo "Pip found in virtual environment."
+                else
+                    echo "Pip not found in virtual environment."
+                    exit 1
+                fi
 
-            ./venv/bin/pip install --upgrade pip
-            if [ $? -ne 0 ]; then
-                echo "Failed to upgrade pip."
-                exit 1
-            fi
-
-            ./venv/bin/pip install -r requirements.txt
-            if [ $? -ne 0 ]; then
-                echo "Failed to install requirements."
-                exit 1
-            fi
+                ./venv/bin/pip install --upgrade pip
+                if [ $? -ne 0 ]; then
+                    echo "Failed to upgrade pip."
+                    exit 1
+                fi
+                ./venv/bin/pip install -r requirements.txt
+                 if [ $? -ne 0 ]; then
+                    echo "Failed to install requirements."
+                    exit 1
+                fi
 
             # Run tests
-            ./venv/bin/python3 test_app.py
-            if [ $? -ne 0 ]; then
-                echo "Tests failed."
-                exit 1
-            fi
-            """
+                ./venv/bin/python3 test_app.py
+                if [ $? -ne 0 ]; then
+                    echo "Tests failed."
+                    exit 1
+                fi
+                """
         }
     }
 }
+
 
         stage('Build') {
             steps {

@@ -30,8 +30,8 @@ pipeline {
                 script {
                     echo 'Testing'
                     sh """
-                    # Install dependencies
-                    source venv/bin/activate
+                    python3 -m venv venv
+                    . venv/bin/activate
                     pip install -r requirements.txt
                     python3 test_app.py
                     """

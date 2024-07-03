@@ -9,7 +9,7 @@
         stage('Clean') {
             steps {
                 script {
-                    echo 'Cleaning up old Docker containers and images...'
+                    echo 'Cleaning up old Docker containers and images'
                     sh """
                     sudo docker stop weather_app || true
                     sudo docker rm weather_app || true

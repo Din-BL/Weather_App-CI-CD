@@ -74,7 +74,7 @@ pipeline {
     post {
         success {
             agent { label 'master' }
-            withCredentials([sshUserPrivateKey(credentialsId: 'SSH_Master_Node', keyFileVariable: 'SSH_KEY_FILE')]) {
+            withCredentials([sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
                 script {
                     echo 'Pipeline completed successfully.'
                     sh """

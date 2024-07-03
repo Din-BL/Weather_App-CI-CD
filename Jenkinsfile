@@ -28,7 +28,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    echo 'Testing...'
+                    echo 'Testing'
                     sh """
                     python3 -m venv venv
                     . venv/bin/activate
@@ -74,7 +74,7 @@ pipeline {
     post {
         success {
             agent { label 'master' }
-            withCredentials([sshUserPrivateKey(credentialsId: SSH_KEY, keyFileVariable: 'SSH_KEY_FILE')]) {
+            withCredentials([sshUserPrivateKey(credentialsId: 'SSH_Key', keyFileVariable: 'SSH_KEY_FILE')]) {
                 script {
                     echo 'Pipeline completed successfully.'
                     sh """
@@ -94,4 +94,3 @@ pipeline {
         }
     }
 }
-

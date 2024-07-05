@@ -75,7 +75,7 @@ pipeline {
         success {
             agent { label 'master' }
                 script {
-                    echo 'Pipeline completed successfully.'
+                    echo 'Pipeline completed successfully'
                     sh """
                     ssh -i $SSH_KEY -o StrictHostKeyChecking=no ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"
                     """
@@ -86,7 +86,7 @@ pipeline {
         failure {
             agent { label 'master' }
             script {
-                echo 'Pipeline failed.'
+                echo 'Pipeline failed'
                 slackSend(channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }

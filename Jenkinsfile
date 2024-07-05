@@ -28,7 +28,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    echo 'Testing'
+                    echo 'Testing...'
                     sh """
                     python3 -m venv venv
                     . venv/bin/activate

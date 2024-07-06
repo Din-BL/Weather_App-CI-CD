@@ -19,9 +19,9 @@ pipeline {
             }
         }
         
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'http://172.31.52.252/root/weather_app.git'
+                checkout scm
             }
         }
         

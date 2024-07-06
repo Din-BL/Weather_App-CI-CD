@@ -73,9 +73,17 @@ pipeline {
     
     post {
         always {
-            cleanWs()
-            sh 'rm -rf $WORKSPACE/@tmp/*'
-
+            script {
+                echo "Cleaning workspace on node: ${env.NODE_NAME}"
+                sh """
+                echo "Current workspace: ${env.WORKSPACE}"
+                echo "Listing workspace contents before cleaning:"
+                ls -al ${env.WORKSPACE}
+                cleanWs()
+                echo "Listing workspace contents after cleaning:"
+                ls -al ${env.WORKSPACE}
+                """
+            }
         }
         success {
             agent { label 'master' }

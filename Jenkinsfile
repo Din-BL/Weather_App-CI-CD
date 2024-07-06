@@ -74,6 +74,8 @@ pipeline {
     post {
         always {
             cleanWs()
+            sh 'rm -rf $WORKSPACE/@tmp/*'
+
         }
         success {
             agent { label 'master' }

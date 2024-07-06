@@ -6,19 +6,7 @@ pipeline {
         SSH_KEY = credentials('SSH_Master-Node')
     }
     stages {
-        stage('Clean') {
-            steps {
-                script {
-                    echo 'Cleaning up old Docker containers and images'
-                    sh """
-                    sudo docker stop weather_app || true
-                    sudo docker rm weather_app || true
-                    sudo docker rmi dinbl/weather_app:latest || true
-                    """
-                }
-            }
-        }
-        
+       
         stage('Checkout') {
             steps {
                 checkout scm

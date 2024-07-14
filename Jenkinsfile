@@ -39,14 +39,6 @@ pipeline {
                 script {
                     echo 'Building...'
                     sh 'sudo docker build -t dinbl/weather_app:latest .'
-                }
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                script {
-                    echo 'Deploying...'
                     sh 'sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:latest'
                 }
             }
@@ -72,7 +64,7 @@ pipeline {
         success {
             agent { label 'master' }
                 script {
-                    echo 'Pipeline completed successfully'
+                    echo 'Deploy'
                     sh """
                     ssh -i $SSH_KEY ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"
                     """

@@ -4,9 +4,21 @@ import requests
 from dotenv import load_dotenv
 import os
 import json
-import subprocess
+import boto3
 
 app = Flask(__name__)
+
+load_dotenv()
+aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+aws_region = os.getenv('AWS_REGION')
+
+dynamodb = boto3.client(
+    'dynamodb',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name=aws_region
+)
 
 
 def remove_commas(input_string):
@@ -45,13 +57,14 @@ def pushed_to_DB(data):
         "Sunset": {"S": item.get("sunset")},
         "Conditions": {"S": item.get("conditions")}
     }
-    item_json = json.dumps(dynamodb_item)
-    command = [
-        "aws", "dynamodb", "put-item",
-        "--table-name", "WeatherData",
-        "--item", item_json
-    ]
-    subprocess.run(command, capture_output=True, text=True)
+
+    try:
+        dynamodb.put_item(
+            TableName='WeatherData',
+            Item=dynamodb_item
+        )
+    except Exception as e:
+        app.logger.error(f"Error pushing data to DynamoDB: {e}")
 
 
 @app.route('/weather', methods=['POST'])
@@ -59,7 +72,6 @@ def weather():
     location = request.form.get('location')
     if not location:
         return redirect(url_for('error'))
-    load_dotenv()
     key = os.getenv('WEATHER_KEY')
     if not key:
         return redirect(url_for('error'))

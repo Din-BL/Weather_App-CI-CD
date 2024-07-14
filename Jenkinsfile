@@ -19,12 +19,6 @@ pipeline {
             }
         }
         
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
         stage('Test') {
             steps {
                 script {

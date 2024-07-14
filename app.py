@@ -63,8 +63,10 @@ def weather():
     key = os.getenv('WEATHER_KEY')
     if not key:
         return redirect(url_for('error'))
-    url = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{
-        location}/next7days?unitGroup=metric&key={key}&contentType=json"
+
+    url = f"""https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{
+        location}/next7days?unitGroup=metric&key={key}&contentType=json"""
+
     try:
         response = requests.get(url)
         response.raise_for_status()

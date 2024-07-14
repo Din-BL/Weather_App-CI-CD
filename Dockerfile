@@ -10,4 +10,5 @@ RUN pip install pytest
 
 COPY . .
 
+CMD ["python", "app.py"]
 

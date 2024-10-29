@@ -138,8 +138,7 @@ def weather():
         app.logger.error('No API key found in environment variables')
         return redirect(url_for('error'))
 
-    url = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{
-        location}/next7days?unitGroup=metric&key={key}&contentType=json"
+    url = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{location}/next7days?unitGroup=metric&key={key}&contentType=json"
     app.logger.debug(f'Requesting weather data from {url}')
 
     try:

@@ -1,14 +1,9 @@
-<<<<<<< HEAD
 from flask import Flask, render_template, request, redirect, url_for, send_file
-=======
-from flask import Flask, render_template, request, redirect, url_for
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
 from datetime import datetime
 import requests
 from dotenv import load_dotenv
 import os
 import json
-<<<<<<< HEAD
 import logging
 import boto3
 from prometheus_client import Counter, generate_latest, REGISTRY
@@ -16,12 +11,6 @@ from prometheus_client import Counter, generate_latest, REGISTRY
 app = Flask(__name__)
 
 # Load environment variables
-=======
-import boto3
-
-app = Flask(__name__)
-
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
 load_dotenv()
 aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
@@ -34,7 +23,6 @@ dynamodb = boto3.client(
     region_name=aws_region
 )
 
-<<<<<<< HEAD
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s: %(message)s',
@@ -59,8 +47,6 @@ def before_request():
 def metrics():
     return generate_latest(REGISTRY)
 
-=======
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
 
 def remove_commas(input_string):
     return input_string.replace(',', '')
@@ -71,8 +57,7 @@ def convert_date_to_day(date_str):
     day_of_week = date_obj.strftime('%a')
     return day_of_week
 
-<<<<<<< HEAD
-# Helper function to save search query data to a JSON file
+    # Function to save search query data to a JSON file
 
 
 def save_search_to_file(location, data):
@@ -105,12 +90,6 @@ def index():
     app.logger.debug('Rendering index page')
     bg_color = os.getenv('BG_COLOR', '#ffffff')
     return render_template('index.html', weather_data=[], file_name=None, bg_color=bg_color)
-=======
-
-@app.route('/')
-def index():
-    return render_template('index.html', weather_data=[])
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
 
 
 def current_Data(data):
@@ -136,18 +115,14 @@ def pushed_to_DB(data):
     }
 
     try:
-<<<<<<< HEAD
         app.logger.info("Pushing data to DynamoDB")
-=======
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
+
         dynamodb.put_item(
             TableName='WeatherData',
             Item=dynamodb_item
         )
-<<<<<<< HEAD
+
         app.logger.info("Data pushed to DynamoDB successfully")
-=======
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
     except Exception as e:
         app.logger.error(f"Error pushing data to DynamoDB: {e}")
 
@@ -156,7 +131,6 @@ def pushed_to_DB(data):
 def weather():
     location = request.form.get('location')
     if not location:
-<<<<<<< HEAD
         app.logger.warning('No location provided in request')
         return redirect(url_for('error'))
     key = os.getenv('WEATHER_KEY')
@@ -164,33 +138,23 @@ def weather():
         app.logger.error('No API key found in environment variables')
         return redirect(url_for('error'))
 
-    url = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{location}/next7days?unitGroup=metric&key={key}&contentType=json"
+    url = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{
+        location}/next7days?unitGroup=metric&key={key}&contentType=json"
     app.logger.debug(f'Requesting weather data from {url}')
-=======
-        return redirect(url_for('error'))
-    key = os.getenv('WEATHER_KEY')
-    if not key:
-        return redirect(url_for('error'))
-
-    url = f"""https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{
-        location}/next7days?unitGroup=metric&key={key}&contentType=json"""
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
 
     try:
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-<<<<<<< HEAD
+
         app.logger.info(f'Weather data retrieved for {location}')
-=======
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
+
     except requests.RequestException as e:
         app.logger.error(f"Request failed: {e}")
         return redirect(url_for('error'))
     except ValueError as e:
         app.logger.error(f"JSON decode failed: {e}")
         return redirect(url_for('error'))
-<<<<<<< HEAD
 
     CITY_LOOKUP_COUNT.labels(city=location).inc()
 
@@ -202,11 +166,6 @@ def weather():
     # Save search query to file and get the file name
     file_name = save_search_to_file(location, data)
 
-=======
-    data_list = data.get('days')
-    if not data_list:
-        return redirect(url_for('error'))
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
     current_day = {
         "data_address": remove_commas(data.get('resolvedAddress')),
         "data_conditions": data_list[0]["conditions"],
@@ -224,14 +183,10 @@ def weather():
         }
         days_list.append(new_day)
     days_list.insert(0, current_day)
-<<<<<<< HEAD
 
     bg_color = os.getenv('BG_COLOR', '#ffffff')
 
     return render_template('index.html', weather_data=days_list, file_name=file_name, bg_color=bg_color)
-=======
-    return render_template('index.html', weather_data=days_list)
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
 
 
 @app.route('/push_to_db', methods=['POST'])
@@ -243,7 +198,6 @@ def push_to_db():
 
 @app.route('/error')
 def error():
-<<<<<<< HEAD
     app.logger.debug('Rendering error page')
     return render_template('error.html')
 
@@ -260,10 +214,6 @@ def download_file(filename):
         app.logger.error(f"File {filename} not found")
         return redirect(url_for('error'))
 
-=======
-    return render_template('error.html')
-
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

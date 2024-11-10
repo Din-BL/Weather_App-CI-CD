@@ -66,7 +66,7 @@ pipeline {
                 script {
                     echo 'Deploy'
                     sh """
-                    ssh -i $SSH_KEY ec2-user@172.31.22.33 "bash /home/ec2-user/production/image_script.sh"
+                    ssh -i $SSH_KEY ec2-user@10.0.6.206 "bash /home/ec2-user/production/image_script.sh"
                     """
                     slackSend(channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)
                 }

@@ -37,9 +37,11 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    echo "Fetching all tags from Git repository..."
+                    echo "Fetching all updates from the Git repository..."
                     sh """
                     git fetch --tags --force
+                    git fetch origin +refs/heads/*:refs/remotes/origin/*
+                    git reset --hard origin/main
                     """
 
                     echo "Retrieving the latest Git tag..."
@@ -80,8 +82,8 @@ pipeline {
             agent { label 'master' }
             script {
                 echo "Deployment complete. Image tag: ${env.IMAGE_TAG}"
-                slackSend(channel: '#cicd-project', 
-                          message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}", 
+                slackSend(channel: '#cicd-project',
+                          message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}",
                           tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }
@@ -89,8 +91,8 @@ pipeline {
             agent { label 'master' }
             script {
                 echo 'Pipeline failed'
-                slackSend(channel: '#cicd-project', 
-                          message: 'Pipeline failed.', 
+                slackSend(channel: '#cicd-project',
+                          message: 'Pipeline failed.',
                           tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }

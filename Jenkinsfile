@@ -39,6 +39,9 @@ pipeline {
                 script {
                     // Extract Git tag
                     def gitTag = sh(script: "git describe --tags --always", returnStdout: true).trim()
+                    if (!gitTag) {
+                        error "Failed to retrieve Git tag. Ensure this is a Git-tracked directory with at least one tag."
+                    }
                     env.IMAGE_TAG = gitTag // Set as environment variable for use in later stages
 
                     echo "Building Docker image with tag: ${env.IMAGE_TAG}"
@@ -52,7 +55,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    echo 'Pushing to Docker Hub'
+                    echo "Pushing Docker image with tag: ${env.IMAGE_TAG}"
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
                     sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
@@ -71,7 +74,7 @@ pipeline {
         success {
             agent { label 'master' }
             script {
-                echo 'Deploying...'
+                echo "Deployment complete. Image tag: ${env.IMAGE_TAG}"
                 slackSend(channel: '#cicd-project', message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}", tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }
@@ -85,4 +88,3 @@ pipeline {
         }
     }
 }
-

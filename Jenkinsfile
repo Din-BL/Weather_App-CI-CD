@@ -1,4 +1,4 @@
-pipeline {
+kpipeline {
     agent { label 'agent' }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
@@ -37,6 +37,10 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    // Ensure the workspace is up-to-date
+                    checkout scm
+                    sh "git fetch --tags"
+                    
                     // Extract Git tag
                     def gitTag = sh(script: "git describe --tags --always", returnStdout: true).trim()
                     if (!gitTag) {
@@ -46,7 +50,7 @@ pipeline {
 
                     echo "Building Docker image with tag: ${env.IMAGE_TAG}"
                     sh """
-                    sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} .
+                    sudo docker build --no-cache -t dinbl/weather_app:${env.IMAGE_TAG} .
                     """
                 }
             }
@@ -88,3 +92,4 @@ pipeline {
         }
     }
 }
+

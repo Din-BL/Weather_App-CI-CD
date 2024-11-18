@@ -41,7 +41,9 @@ pipeline {
                     sh """
                     git fetch --tags --force
                     git fetch origin +refs/heads/*:refs/remotes/origin/*
+                    git fetch origin +refs/tags/*:refs/tags/*
                     git reset --hard origin/main
+                    git pull --tags
                     """
 
                     echo "Retrieving the latest Git tag..."

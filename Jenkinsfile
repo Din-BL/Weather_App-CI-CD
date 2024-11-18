@@ -18,7 +18,18 @@ pipeline {
                 }
             }
         }
-
+        
+        stage('Retrieve Git Tag') {
+            steps {
+                script {
+                    echo 'Retrieving Git Tag...'
+                    def gitTag = sh(script: "git describe --tags", returnStdout: true).trim()
+                    echo "Git Tag: ${gitTag}"
+                    env.IMAGE_TAG = gitTag // Save Git tag as environment variable
+                }
+            }
+        }
+        
         stage('Test') {
             steps {
                 script {
@@ -33,69 +44,46 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Build') {
             steps {
                 script {
-                    echo "Fetching all updates from the Git repository..."
-                    sh """
-                    git fetch --tags --force
-                    git fetch origin +refs/heads/*:refs/remotes/origin/*
-                    git fetch origin +refs/tags/*:refs/tags/*
-                    git reset --hard origin/main
-                    git pull --tags
-                    """
-
-                    echo "Retrieving the latest Git tag..."
-                    def gitTag = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
-                    if (!gitTag) {
-                        error "No Git tag found. Ensure tags are created and pushed to the repository."
-                    }
-                    env.IMAGE_TAG = gitTag // Set as environment variable for use in later stages
-
-                    echo "Building Docker image with tag: ${env.IMAGE_TAG}"
-                    sh """
-                    sudo docker build --no-cache -t dinbl/weather_app:${env.IMAGE_TAG} .
-                    """
+                    echo 'Building...'
+                    sh "sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} ."
+                    sh "sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:${env.IMAGE_TAG}"
                 }
             }
         }
-
+        
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    echo "Pushing Docker image with tag: ${env.IMAGE_TAG}"
+                    echo 'Pushing to Docker Hub'
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
                     sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
-                    sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest
-                    sudo docker push dinbl/weather_app:latest
                     """
                 }
             }
         }
     }
-
+    
     post {
         always {
-            cleanWs() // Clean up the workspace
+            cleanWs()
         }
         success {
             agent { label 'master' }
             script {
-                echo "Deployment complete. Image tag: ${env.IMAGE_TAG}"
-                slackSend(channel: '#cicd-project',
-                          message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}",
-                          tokenCredentialId: SLACK_CREDENTIAL_ID)
+                echo 'Deploy'
+                slackSend(channel: '#cicd-project', message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}", tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }
         failure {
             agent { label 'master' }
             script {
                 echo 'Pipeline failed'
-                slackSend(channel: '#cicd-project',
-                          message: 'Pipeline failed.',
-                          tokenCredentialId: SLACK_CREDENTIAL_ID)
+                slackSend(channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }
     }

@@ -37,14 +37,16 @@ kpipeline {
         stage('Build') {
             steps {
                 script {
-                    // Ensure the workspace is up-to-date
+                    // Ensure the workspace is up-to-date and fetch all tags
                     checkout scm
-                    sh "git fetch --tags"
-                    
-                    // Extract Git tag
-                    def gitTag = sh(script: "git describe --tags --always", returnStdout: true).trim()
+                    sh """
+                    git fetch --tags --force
+                    """
+
+                    // Extract the latest Git tag
+                    def gitTag = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
                     if (!gitTag) {
-                        error "Failed to retrieve Git tag. Ensure this is a Git-tracked directory with at least one tag."
+                        error "Failed to retrieve Git tag. Ensure there are tags in the repository."
                     }
                     env.IMAGE_TAG = gitTag // Set as environment variable for use in later stages
 

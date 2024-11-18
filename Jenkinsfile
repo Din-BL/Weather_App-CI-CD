@@ -37,9 +37,14 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    echo 'Building...'
-                    sh 'sudo docker build -t dinbl/weather_app:latest .'
-                    sh 'sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:latest'
+                    // Extract Git tag
+                    def gitTag = sh(script: "git describe --tags --always", returnStdout: true).trim()
+                    env.IMAGE_TAG = gitTag // Set as environment variable for use in later stages
+
+                    echo "Building Docker image with tag: ${env.IMAGE_TAG}"
+                    sh """
+                    sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} .
+                    """
                 }
             }
         }
@@ -50,6 +55,8 @@ pipeline {
                     echo 'Pushing to Docker Hub'
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
+                    sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
+                    sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest
                     sudo docker push dinbl/weather_app:latest
                     """
                 }
@@ -63,13 +70,13 @@ pipeline {
         }
         success {
             agent { label 'master' }
-                script {
-                    echo 'Deploy'
-                    sh """
-                    ssh -i $SSH_KEY ec2-user@10.0.6.206 "bash /home/ec2-user/production/image_script.sh"
-                    """
-                    slackSend(channel: '#cicd-project', message: 'Pipeline completed successfully.', tokenCredentialId: SLACK_CREDENTIAL_ID)
-                }
+            script {
+                echo 'Deploying...'
+                sh """
+                # Deployment commands (e.g., SSH to server and deploy)
+                """
+                slackSend(channel: '#cicd-project', message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}", tokenCredentialId: SLACK_CREDENTIAL_ID)
+            }
         }
         
         failure {
@@ -81,3 +88,4 @@ pipeline {
         }
     }
 }
+

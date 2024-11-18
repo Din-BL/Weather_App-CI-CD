@@ -1,6 +1,14 @@
-<<<<<<< HEAD
-venv
+# Exclude specific files
+token
 weather_app.log
-=======
-venv
->>>>>>> 33a8a8180e91c3186f80296d92d463ef7025f928
+history
+
+# Exclude virtual environment
+venv/
+
+# Exclude Python cache files
+__pycache__/
+
+# Additional exclusions (optional)
+*.pyc
+*.pyo

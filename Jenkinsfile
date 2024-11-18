@@ -1,4 +1,4 @@
-kpipeline {
+pipeline {
     agent { label 'agent' }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
@@ -18,7 +18,7 @@ kpipeline {
                 }
             }
         }
-        
+
         stage('Test') {
             steps {
                 script {
@@ -33,20 +33,19 @@ kpipeline {
                 }
             }
         }
-        
+
         stage('Build') {
             steps {
                 script {
-                    // Ensure the workspace is up-to-date and fetch all tags
-                    checkout scm
+                    echo "Fetching all tags from Git repository..."
                     sh """
                     git fetch --tags --force
                     """
 
-                    // Extract the latest Git tag
+                    echo "Retrieving the latest Git tag..."
                     def gitTag = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
                     if (!gitTag) {
-                        error "Failed to retrieve Git tag. Ensure there are tags in the repository."
+                        error "No Git tag found. Ensure tags are created and pushed to the repository."
                     }
                     env.IMAGE_TAG = gitTag // Set as environment variable for use in later stages
 
@@ -57,7 +56,7 @@ kpipeline {
                 }
             }
         }
-        
+
         stage('Push to Docker Hub') {
             steps {
                 script {
@@ -72,26 +71,28 @@ kpipeline {
             }
         }
     }
-    
+
     post {
         always {
-            cleanWs()
+            cleanWs() // Clean up the workspace
         }
         success {
             agent { label 'master' }
             script {
                 echo "Deployment complete. Image tag: ${env.IMAGE_TAG}"
-                slackSend(channel: '#cicd-project', message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}", tokenCredentialId: SLACK_CREDENTIAL_ID)
+                slackSend(channel: '#cicd-project', 
+                          message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}", 
+                          tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }
-        
         failure {
             agent { label 'master' }
             script {
                 echo 'Pipeline failed'
-                slackSend(channel: '#cicd-project', message: 'Pipeline failed.', tokenCredentialId: SLACK_CREDENTIAL_ID)
+                slackSend(channel: '#cicd-project', 
+                          message: 'Pipeline failed.', 
+                          tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }
     }
 }
-

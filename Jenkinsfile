@@ -72,9 +72,6 @@ pipeline {
             agent { label 'master' }
             script {
                 echo 'Deploying...'
-                sh """
-                # Deployment commands (e.g., SSH to server and deploy)
-                """
                 slackSend(channel: '#cicd-project', message: "Pipeline completed successfully. Docker image tag: ${env.IMAGE_TAG}", tokenCredentialId: SLACK_CREDENTIAL_ID)
             }
         }

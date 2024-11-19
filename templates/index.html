@@ -59,9 +59,9 @@
               </div>
               <div class="p-3">
                 {% if "Rain" in weather_data[0].data_conditions %}
-                <img src="https://svgur.com/i/oJx.svg" />
+                <img src="/static/assets/rain.png" />
                 {% else %}
-                <img src="https://svgur.com/i/oKG.svg" />
+                <img src="/static/assets/sun.png" />
                 {% endif %}
               </div>
               <div class="p-3">
@@ -72,15 +72,15 @@
             </div>
             <div class="weather__status d-flex flex-row justify-content-center align-items-center mt-3">
               <div class="p-4 d-flex justify-content-center align-items-center">
-                <img src="https://svgur.com/i/oHw.svg" />
+                <img src="/static/assets/humidity.png" />
                 <span>{{ weather_data[1].humidity }}%</span>
               </div>
               <div class="p-4 d-flex justify-content-center align-items-center">
-                <img src="https://svgur.com/i/oH_.svg" />
+                <img src="/static/assets/temp.png.png" />
                 <span>{{ weather_data[0].data_tempmax }} °C</span>
               </div>
               <div class="p-4 d-flex justify-content-center align-items-center">
-                <img src="https://svgur.com/i/oKS.svg" />
+                <img src="/static/assets/wind.png" />
                 <span>{{ weather_data[1].windspeed }} km/h</span>
               </div>
               <div class="p-4 d-flex justify-content-center align-items-center">
@@ -99,9 +99,9 @@
         <div class="p-4 d-flex flex-column justify-content-center align-items-center">
           <span>{{ day.datetime }}</span>
           {% if "Rain" in day.conditions %}
-          <img src="https://svgur.com/i/oJx.svg" />
+          <img src="/static/assets/rain.png" />
           {% else %}
-          <img src="https://svgur.com/i/oKG.svg" />
+          <img src="/static/assets/sun.png" />
           {% endif %}
           <span>{{ day.temp }}&deg;</span>
         </div>

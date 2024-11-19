@@ -49,8 +49,10 @@ pipeline {
             steps {
                 script {
                     echo 'Building...'
+                    // Build the image with the Git tag
                     sh "sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} ."
-                    sh "sudo docker run --name weather_app -d -p 5000:5000 dinbl/weather_app:${env.IMAGE_TAG}"
+                    // Tag the image as latest
+                    sh "sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest"
                 }
             }
         }
@@ -61,7 +63,10 @@ pipeline {
                     echo 'Pushing to Docker Hub'
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
+                    // Push the version-specific tag
                     sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
+                    // Push the latest tag
+                    sudo docker push dinbl/weather_app:latest
                     """
                 }
             }

@@ -73,9 +73,6 @@ pipeline {
     }
     post {
         always {
-            node {
-                cleanWs()
-            }
         }
         success {
             script {

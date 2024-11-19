@@ -6,7 +6,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         // SLACK_CREDENTIAL_ID   = credentials('Slack_Token')
         SSH_KEY               = credentials('SSH_Master-Node')
-        // GITHUB_CREDENTIALS    = credentials('GitHub-PAT')
+        GITHUB_CREDENTIALS    = credentials('GitHub-PAT')
     }
     stages {
         stage('Clean') {

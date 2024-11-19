@@ -73,7 +73,11 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
+            script {
+                node {
+                    cleanWs()
+                }
+            }
         }
         success {
             script {
@@ -81,14 +85,14 @@ pipeline {
 
                 echo 'Updating Helm Chart in GitHub Repository...'
                 sh """
-                    git clone https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git
+                    git clone https://${GITHUB_CREDENTIALS_USR}:${GITHUB_CREDENTIALS_PSW}@github.com/Din-BL/Helm-Charts.git
                     cd Helm-Charts
                     sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
                     git config user.name "Din"
                     git config user.email "Dinz5005@gmail.com"
                     git add .
                     git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
-                    git push https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git main
+                    git push origin main
                 """
 
                 // slackSend(

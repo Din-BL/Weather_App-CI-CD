@@ -1,13 +1,12 @@
 pipeline {
-    agent { 
-        label 'agent' 
+    agent {
+        label 'agent'
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        SLACK_CREDENTIAL_ID = 'Slack_Token'
-        SSH_KEY = credentials('SSH_Master-Node')
-	GITHUB_CREDENTIALS = credentials('GitHub-PAT')
-
+        SLACK_CREDENTIAL_ID   = credentials('Slack_Token')
+        SSH_KEY               = credentials('SSH_Master-Node')
+        GITHUB_CREDENTIALS    = credentials('GitHub-PAT')
     }
     stages {
         stage('Clean') {
@@ -15,9 +14,9 @@ pipeline {
                 script {
                     echo 'Cleaning up old Docker containers and images'
                     sh """
-                        sudo docker stop weather_app || true
-                        sudo docker rm weather_app || true
-                        sudo docker rmi dinbl/weather_app:latest || true
+                    sudo docker stop weather_app || true
+                    sudo docker rm weather_app || true
+                    sudo docker rmi dinbl/weather_app:latest || true
                     """
                 }
             }
@@ -39,11 +38,11 @@ pipeline {
                 script {
                     echo 'Testing...'
                     sh """
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install -r requirements.txt
-                        # Run tests
-                        python3 test_app.py
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                    # Run tests
+                    python3 test_app.py
                     """
                 }
             }
@@ -53,10 +52,8 @@ pipeline {
             steps {
                 script {
                     echo 'Building...'
-                    sh """
-                        sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} .
-                        sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest
-                    """
+                    sh "sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} ."
+                    sh "sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest"
                 }
             }
         }
@@ -66,18 +63,19 @@ pipeline {
                 script {
                     echo 'Pushing to Docker Hub'
                     sh """
-                        echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
-                        sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
-                        sudo docker push dinbl/weather_app:latest
+                    echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
+                    sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
+                    sudo docker push dinbl/weather_app:latest
                     """
                 }
             }
         }
     }
-
     post {
         always {
-            cleanWs()
+            node {
+                cleanWs()
+            }
         }
         success {
             script {
@@ -85,14 +83,14 @@ pipeline {
 
                 echo 'Updating Helm Chart in GitHub Repository...'
                 sh """
-		    git clone https://${GITHUB_PAT}@github.com/Din-BL/Helm-Charts.git
+                    git clone https://${GITHUB_CREDENTIALS_USR}:${GITHUB_CREDENTIALS_PSW}@github.com/Din-BL/Helm-Charts.git
                     cd Helm-Charts
                     sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
                     git config user.name "Din"
                     git config user.email "Dinz5005@gmail.com"
                     git add .
                     git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
-                    git push https://${GITHUB_TOKEN}@github.com/Din-BL/Helm-Charts.git main
+                    git push origin main
                 """
 
                 slackSend(

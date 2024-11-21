@@ -5,7 +5,6 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        // SLACK_CREDENTIAL_ID   = credentials('Slack_Token')
         SSH_KEY               = credentials('SSH_Master-Node')
         GITHUB_CREDENTIALS    = credentials('GitHub_PAT')
     }
@@ -92,18 +91,29 @@ pipeline {
             script {
                 echo 'Pipeline completed successfully. Updating resources...'
 
-                echo 'Updating Helm Chart in GitHub Repository...'
-                sh """
-                git clone https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git
-                cd Helm-Charts
-                sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
-                git config user.name "Din"
-                git config user.email "Dinz5005@gmail.com"
-                git add .
-                git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
-                git push https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git main
-                """
+                withCredentials([usernamePassword(credentialsId: 'GitHub_PAT', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    echo 'Updating Helm Chart in GitHub Repository...'
+                    sh """
+                    if [ ! -d Helm-Charts ]; then
+                        git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Din-BL/Helm-Charts.git
+                    else
+                        cd Helm-Charts
+                        git reset --hard  # Ensure clean working directory
+                        git pull origin main
+                        cd ..
+                    fi
 
+                    cd Helm-Charts
+                    sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
+                    git config user.name "Din"
+                    git config user.email "Dinz5005@gmail.com"
+                    git add .
+                    git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
+                    git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Din-BL/Helm-Charts.git main
+                    """
+                }
+
+                // Uncomment if Slack integration is desired
                 // slackSend(
                 //     channel: '#cicd-project',
                 //     message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
@@ -115,6 +125,7 @@ pipeline {
         failure {
             script {
                 echo 'Pipeline failed'
+                // Uncomment if Slack integration is desired
                 // slackSend(
                 //     channel: '#cicd-project',
                 //     message: 'Pipeline failed.',

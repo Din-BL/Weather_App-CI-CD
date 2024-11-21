@@ -6,7 +6,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         SSH_KEY               = credentials('SSH_Master-Node')
-        GITHUB_CREDENTIALS    = credentials('GitHub_PAT')
+        GITHUB_TOKEN          = credentials('GitHub_PAT') // Use GitHub PAT as a secret text
     }
 
     stages {
@@ -91,11 +91,11 @@ pipeline {
             script {
                 echo 'Pipeline completed successfully. Updating resources...'
 
-                withCredentials([usernamePassword(credentialsId: 'GitHub_PAT', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                    echo 'Updating Helm Chart in GitHub Repository...'
+                withCredentials([string(credentialsId: 'GitHub_PAT', variable: 'GIT_TOKEN')]) {
                     sh """
+                    # Clone the Helm chart repo or pull the latest changes
                     if [ ! -d Helm-Charts ]; then
-                        git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Din-BL/Helm-Charts.git
+                        git clone https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git
                     else
                         cd Helm-Charts
                         git reset --hard  # Ensure clean working directory
@@ -103,13 +103,14 @@ pipeline {
                         cd ..
                     fi
 
+                    # Update the Docker image tag in the Helm chart
                     cd Helm-Charts
                     sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
                     git config user.name "Din"
                     git config user.email "Dinz5005@gmail.com"
                     git add .
                     git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
-                    git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Din-BL/Helm-Charts.git main
+                    git push https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git main
                     """
                 }
 

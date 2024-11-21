@@ -2,21 +2,26 @@ pipeline {
     agent {
         label 'agent'
     }
+
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         // SLACK_CREDENTIAL_ID   = credentials('Slack_Token')
         SSH_KEY               = credentials('SSH_Master-Node')
         GITHUB_CREDENTIALS    = credentials('GitHub_PAT')
     }
+
     stages {
         stage('Clean') {
             steps {
                 script {
-                    echo 'Cleaning up old Docker containers and images'
+                    echo 'Cleaning up all Docker containers and images'
                     sh """
-                    sudo docker stop weather_app || true
-                    sudo docker rm weather_app || true
-                    sudo docker rmi dinbl/weather_app:latest || true
+                    # Stop and remove all running containers
+                    sudo docker ps -aq | xargs -r sudo docker stop
+                    sudo docker ps -aq | xargs -r sudo docker rm
+
+                    # Remove all Docker images
+                    sudo docker images -aq | xargs -r sudo docker rmi -f
                     """
                 }
             }
@@ -52,8 +57,10 @@ pipeline {
             steps {
                 script {
                     echo 'Building...'
-                    sh "sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} ."
-                    sh "sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest"
+                    sh """
+                    sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} .
+                    sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest
+                    """
                 }
             }
         }
@@ -71,6 +78,7 @@ pipeline {
             }
         }
     }
+
     post {
         always {
             script {
@@ -79,21 +87,22 @@ pipeline {
                 }
             }
         }
+
         success {
             script {
                 echo 'Pipeline completed successfully. Updating resources...'
 
                 echo 'Updating Helm Chart in GitHub Repository...'
                 sh """
-                        git clone https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git
-                        cd Helm-Charts
-                        sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
-                        git config user.name "Din"
-                        git config user.email "Dinz5005@gmail.com"
-                        git add .
-                        git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
-                        git push https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git main
-                    """
+                git clone https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git
+                cd Helm-Charts
+                sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
+                git config user.name "Din"
+                git config user.email "Dinz5005@gmail.com"
+                git add .
+                git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
+                git push https://${GITHUB_CREDENTIALS}@github.com/Din-BL/Helm-Charts.git main
+                """
 
                 // slackSend(
                 //     channel: '#cicd-project',
@@ -102,6 +111,7 @@ pipeline {
                 // )
             }
         }
+
         failure {
             script {
                 echo 'Pipeline failed'

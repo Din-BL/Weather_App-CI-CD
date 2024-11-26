@@ -4,162 +4,120 @@ pipeline {
     }
 
     environment {
-        SLACK_CREDENTIAL_ID   = credentials('Slack_Token')
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         SSH_KEY               = credentials('SSH_Master-Node')
-        GITHUB_TOKEN          = credentials('GitHub_PAT') 
+        GITHUB_TOKEN          = credentials('GitHub_PAT')
+        SLACK_TOKEN           = credentials('Slack_Token')
     }
 
     stages {
         stage('Clean') {
             steps {
-                script {
-                    echo 'Cleaning up all Docker containers and images'
-                    sh """
-                    # Stop and remove all running containers
-                    sudo docker ps -aq | xargs -r sudo docker stop
-                    sudo docker ps -aq | xargs -r sudo docker rm
+                echo 'Cleaning up all Docker containers and images'
+                sh """
+                # Stop and remove all running containers
+                sudo docker ps -aq | xargs -r sudo docker stop
+                sudo docker ps -aq | xargs -r sudo docker rm
 
-                    # Remove all Docker images
-                    sudo docker images -aq | xargs -r sudo docker rmi -f
-                    """
-                }
+                # Remove all Docker images
+                sudo docker images -aq | xargs -r sudo docker rmi -f
+                """
             }
         }
 
         stage('Retrieve Git Tag') {
             steps {
+                echo 'Retrieving Git Tag...'
                 script {
-                    echo 'Retrieving Git Tag...'
-                    def gitTag = sh(script: "git describe --tags", returnStdout: true).trim()
-                    echo "Git Tag: ${gitTag}"
-                    env.IMAGE_TAG = gitTag 
+                    env.IMAGE_TAG = sh(script: "git describe --tags", returnStdout: true).trim()
+                    echo "Git Tag: ${env.IMAGE_TAG}"
                 }
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    echo 'Testing...'
-                    sh """
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install -r requirements.txt
-                    # Run tests
-                    python3 test_app.py
-                    """
-                }
+                echo 'Testing...'
+                sh """
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install -r requirements.txt
+                python3 test_app.py
+                """
             }
         }
 
         stage('Build') {
             steps {
-                script {
-                    echo 'Building...'
-                    sh """
-                    sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} .
-                    sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest
-                    """
-                }
+                echo 'Building Docker image...'
+                sh """
+                sudo docker build -t dinbl/weather_app:${env.IMAGE_TAG} .
+                sudo docker tag dinbl/weather_app:${env.IMAGE_TAG} dinbl/weather_app:latest
+                """
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    echo 'Pushing to Docker Hub'
-                    sh """
-                    echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
-                    sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
-                    sudo docker push dinbl/weather_app:latest
-                    """
-                }
+                echo 'Pushing Docker image to Docker Hub...'
+                sh """
+                echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
+                sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
+                sudo docker push dinbl/weather_app:latest
+                """
             }
         }
     }
 
     post {
         always {
-            script {
-                node {
-                    cleanWs()
-                }
-            }
+            cleanWs()
         }
 
         success {
-            script {
-                echo 'Pipeline completed successfully. Updating resources...'
-
-                withCredentials([string(credentialsId: 'GitHub_PAT', variable: 'GIT_TOKEN')]) {
-                    sh """
-                    # Clone the Helm chart repo or pull the latest changes
-                    if [ ! -d Helm-Charts ]; then
-                        git clone https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git
-                    else
-                        cd Helm-Charts
-                        git reset --hard  # Ensure clean working directory
-                        git pull origin main
-                        cd ..
-                    fi
-
-                    # Update the Docker image tag in the Helm chart
-                    cd Helm-Charts
-                    sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/g' values.yaml
-                    git config user.name "Din"
-                    git config user.email "Dinz5005@gmail.com"
-                    git add .
-                    git commit -m "Update Docker image tag to ${env.IMAGE_TAG}"
-                    git push https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git main
-                    """
-                }
-
-                // slackSend(
-                //     channel: '#cicd-project',
-                //     message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
-                //     tokenCredentialId: SLACK_CREDENTIAL_ID
-                // )
-                
-
-    echo "Resolved Slack Credential ID: ${SLACK_CREDENTIAL_ID}"
-
-
-
-                withCredentials([string(credentialsId: 'Slack_Token', variable: 'SLACK_TOKEN')]) {
-                 slackSend(
-                 channel: '#cicd-project',
-                 message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
-                 token: SLACK_TOKEN
-    )
-}
-
-
-
-
-            }
+            echo 'Pipeline completed successfully. Updating resources...'
+            updateHelmChart(env.IMAGE_TAG)
+            sendSlackNotification("Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}")
         }
 
         failure {
-            script {
-                echo 'Pipeline failed'
-
-
-                withCredentials([string(credentialsId: 'Slack_Token', variable: 'SLACK_TOKEN')]) {
-    slackSend(
-        channel: '#cicd-project',
-        message: "Pipeline completed Faild. Image tag: ${env.IMAGE_TAG}",
-        token: SLACK_TOKEN
-    )
+            echo 'Pipeline failed'
+            sendSlackNotification("Pipeline failed. Image tag: ${env.IMAGE_TAG}")
+        }
+    }
 }
 
+def updateHelmChart(imageTag) {
+    withCredentials([string(credentialsId: 'GitHub_PAT', variable: 'GIT_TOKEN')]) {
+        sh """
+        # Clone the Helm chart repo or pull the latest changes
+        if [ ! -d Helm-Charts ]; then
+            git clone https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git
+        else
+            cd Helm-Charts
+            git reset --hard
+            git pull origin main
+            cd ..
+        fi
 
-                // slackSend(
-                //     channel: '#cicd-project',
-                //     message: 'Pipeline failed.',
-                //     tokenCredentialId: SLACK_CREDENTIAL_ID
-                // )
-            }
-        }
+        # Update the Docker image tag in the Helm chart
+        cd Helm-Charts
+        sed -i 's/tag: .*/tag: ${imageTag}/g' values.yaml
+        git config user.name "Din"
+        git config user.email "Dinz5005@gmail.com"
+        git add .
+        git commit -m "Update Docker image tag to ${imageTag}"
+        git push https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git main
+        """
+    }
+}
+
+def sendSlackNotification(message) {
+    withCredentials([string(credentialsId: 'Slack_Token', variable: 'SLACK_TOKEN')]) {
+        slackSend(
+            channel: '#cicd-project',
+            message: message,
+            token: SLACK_TOKEN
+        )
     }
 }

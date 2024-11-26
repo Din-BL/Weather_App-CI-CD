@@ -4,9 +4,10 @@ pipeline {
     }
 
     environment {
+        SLACK_CREDENTIAL_ID   = credentials('Slack_Token')
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         SSH_KEY               = credentials('SSH_Master-Node')
-        GITHUB_TOKEN          = credentials('GitHub_PAT') // Use GitHub PAT as a secret text
+        GITHUB_TOKEN          = credentials('GitHub_PAT') 
     }
 
     stages {
@@ -32,7 +33,7 @@ pipeline {
                     echo 'Retrieving Git Tag...'
                     def gitTag = sh(script: "git describe --tags", returnStdout: true).trim()
                     echo "Git Tag: ${gitTag}"
-                    env.IMAGE_TAG = gitTag // Save Git tag as environment variable
+                    env.IMAGE_TAG = gitTag 
                 }
             }
         }
@@ -114,24 +115,22 @@ pipeline {
                     """
                 }
 
-                // Uncomment if Slack integration is desired
-                // slackSend(
-                //     channel: '#cicd-project',
-                //     message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
-                //     tokenCredentialId: SLACK_CREDENTIAL_ID
-                // )
+                slackSend(
+                    channel: '#cicd-project',
+                    message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
+                    tokenCredentialId: SLACK_CREDENTIAL_ID
+                )
             }
         }
 
         failure {
             script {
                 echo 'Pipeline failed'
-                // Uncomment if Slack integration is desired
-                // slackSend(
-                //     channel: '#cicd-project',
-                //     message: 'Pipeline failed.',
-                //     tokenCredentialId: SLACK_CREDENTIAL_ID
-                // )
+                slackSend(
+                    channel: '#cicd-project',
+                    message: 'Pipeline failed.',
+                    tokenCredentialId: SLACK_CREDENTIAL_ID
+                )
             }
         }
     }

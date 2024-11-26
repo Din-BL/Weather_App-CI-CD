@@ -2,6 +2,9 @@
 token
 weather_app.log
 history
+terraform
+helm_chart
+ArgoCD
 
 # Exclude virtual environment
 venv/
@@ -12,3 +15,5 @@ __pycache__/
 # Additional exclusions (optional)
 *.pyc
 *.pyo
+
+

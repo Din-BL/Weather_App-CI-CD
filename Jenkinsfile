@@ -119,6 +119,8 @@ pipeline {
                     channel: '#cicd-project',
                     message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
                     tokenCredentialId: SLACK_CREDENTIAL_ID
+                    echo "SLACK_CREDENTIAL_ID: ${SLACK_CREDENTIAL_ID}"
+                    echo "SLACK_CREDENTIAL_ID: ${Slack_Token}"
                 )
             }
         }
@@ -130,6 +132,8 @@ pipeline {
                     channel: '#cicd-project',
                     message: 'Pipeline failed.',
                     tokenCredentialId: SLACK_CREDENTIAL_ID
+                    echo "SLACK_CREDENTIAL_ID: ${SLACK_CREDENTIAL_ID}"
+                    echo "SLACK_CREDENTIAL_ID: ${Slack_Token}"
                 )
             }
         }

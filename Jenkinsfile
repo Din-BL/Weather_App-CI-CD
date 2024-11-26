@@ -115,26 +115,50 @@ pipeline {
                     """
                 }
 
-                slackSend(
-                    channel: '#cicd-project',
-                    message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
-                    tokenCredentialId: SLACK_CREDENTIAL_ID
-                )
-                echo "SLACK_CREDENTIAL_ID: ${SLACK_CREDENTIAL_ID}"
-                echo "SLACK_CREDENTIAL_ID: ${Slack_Token}"
+                // slackSend(
+                //     channel: '#cicd-project',
+                //     message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
+                //     tokenCredentialId: SLACK_CREDENTIAL_ID
+                // )
+                
+
+    echo "Resolved Slack Credential ID: ${SLACK_CREDENTIAL_ID}"
+
+
+
+                withCredentials([string(credentialsId: 'Slack_Token', variable: 'SLACK_TOKEN')]) {
+                 slackSend(
+                 channel: '#cicd-project',
+                 message: "Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}",
+                 token: SLACK_TOKEN
+    )
+}
+
+
+
+
             }
         }
 
         failure {
             script {
                 echo 'Pipeline failed'
-                slackSend(
-                    channel: '#cicd-project',
-                    message: 'Pipeline failed.',
-                    tokenCredentialId: SLACK_CREDENTIAL_ID
-                )
-                echo "SLACK_CREDENTIAL_ID: ${SLACK_CREDENTIAL_ID}"
-                echo "SLACK_CREDENTIAL_ID: ${Slack_Token}"
+
+
+                withCredentials([string(credentialsId: 'Slack_Token', variable: 'SLACK_TOKEN')]) {
+    slackSend(
+        channel: '#cicd-project',
+        message: "Pipeline completed Faild. Image tag: ${env.IMAGE_TAG}",
+        token: SLACK_TOKEN
+    )
+}
+
+
+                // slackSend(
+                //     channel: '#cicd-project',
+                //     message: 'Pipeline failed.',
+                //     tokenCredentialId: SLACK_CREDENTIAL_ID
+                // )
             }
         }
     }

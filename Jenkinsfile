@@ -8,6 +8,8 @@ pipeline {
         SSH_KEY               = credentials('SSH_Master-Node')
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
+        SONARQUBE_URL         = 'http://10.0.11.210:9000' 
+        SONARQUBE_TOKEN       = credentials('Sonar_Token')   
     }
 
     stages {
@@ -31,6 +33,21 @@ pipeline {
                 script {
                     env.IMAGE_TAG = sh(script: "git describe --tags", returnStdout: true).trim()
                     echo "Git Tag: ${env.IMAGE_TAG}"
+                }
+            }
+        }
+
+         stage('SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube analysis...'
+                withSonarQubeEnv('SonarQube') { 
+                    sh """
+                    sonar-scanner \
+                        -Dsonar.projectKey=WeatherApp \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${SONARQUBE_URL} \
+                        -Dsonar.login=${SONARQUBE_TOKEN}
+                    """
                 }
             }
         }

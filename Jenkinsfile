@@ -41,13 +41,14 @@ pipeline {
             steps {
                 echo 'Running SonarQube analysis...'
                 withSonarQubeEnv('SonarQube') { 
-                    sh """
-                    sonar-scanner \
-                        -Dsonar.projectKey=WeatherApp \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${SONARQUBE_URL} \
-                        -Dsonar.login=${SONARQUBE_TOKEN}
-                    """
+                   sh """
+/opt/sonar-scanner/bin/sonar-scanner \
+    -Dsonar.projectKey=WeatherApp \
+    -Dsonar.sources=. \
+    -Dsonar.host.url=${SONARQUBE_URL} \
+    -Dsonar.login=${SONARQUBE_TOKEN}
+"""
+
                 }
             }
         }

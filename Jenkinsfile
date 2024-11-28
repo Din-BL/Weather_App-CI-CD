@@ -9,7 +9,7 @@ pipeline {
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
         SONARQUBE_URL         = 'http://10.0.11.210:9000'
-        SONARQUBE_TOKEN       = credentials('Sonar_Token')
+        SONARQUBE_TOKEN       = credentials('SonarQube-Token')
     }
 
     stages {

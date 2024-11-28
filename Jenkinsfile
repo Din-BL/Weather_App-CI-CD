@@ -8,8 +8,8 @@ pipeline {
         SSH_KEY               = credentials('SSH_Master-Node')
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
-        SONARQUBE_URL         = 'http://10.0.11.210:9000' 
-        SONARQUBE_TOKEN       = credentials('Sonar_Token')   
+        SONARQUBE_URL         = 'http://10.0.11.210:9000'
+        SONARQUBE_TOKEN       = credentials('Sonar_Token')
     }
 
     stages {
@@ -37,25 +37,24 @@ pipeline {
             }
         }
 
-         stage('SonarQube Analysis') {
+        stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube analysis...'
                 withSonarQubeEnv('SonarQube') { 
-                   sh """
-/opt/sonar-scanner/bin/sonar-scanner \
-    -Dsonar.projectKey=WeatherApp \
-    -Dsonar.sources=. \
-    -Dsonar.host.url=${SONARQUBE_URL} \
-    -Dsonar.login=${SONARQUBE_TOKEN}
-"""
-
+                    sh """
+                    /opt/sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.projectKey=WeatherApp \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${SONARQUBE_URL} \
+                        -Dsonar.token=${SONARQUBE_TOKEN}
+                    """
                 }
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Testing...'
+                echo 'Running tests...'
                 sh """
                 python3 -m venv venv
                 . venv/bin/activate
@@ -99,7 +98,7 @@ pipeline {
         }
 
         failure {
-            echo 'Pipeline failed'
+            echo 'Pipeline failed.'
             sendSlackNotification("Pipeline failed. Image tag: ${env.IMAGE_TAG}")
         }
     }

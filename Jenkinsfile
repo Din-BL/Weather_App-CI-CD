@@ -43,7 +43,7 @@ pipeline {
                 withSonarQubeEnv('SonarQube') { 
                     sh """
                     /opt/sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.projectKey=WeatherApp \
+                        -Dsonar.projectKey=CI-CD-Weather_App \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=${SONARQUBE_URL} \
                         -Dsonar.token=${SONARQUBE_TOKEN}

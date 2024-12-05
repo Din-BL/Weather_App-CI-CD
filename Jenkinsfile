@@ -1,7 +1,9 @@
 pipeline {
-    agent {
-        label 'agent'
-    }
+    // agent {
+    //     label 'agent'
+    // }
+    agent { label 'aws-dynamic-agent' } 
+
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
@@ -13,19 +15,19 @@ pipeline {
     }
 
     stages {
-        stage('Clean') {
-            steps {
-                echo 'Cleaning up all Docker containers and images'
-                sh """
-                # Stop and remove all running containers
-                sudo docker ps -aq | xargs -r sudo docker stop
-                sudo docker ps -aq | xargs -r sudo docker rm
+        // stage('Clean') {
+        //     steps {
+        //         echo 'Cleaning up all Docker containers and images'
+        //         sh """
+        //         # Stop and remove all running containers
+        //         sudo docker ps -aq | xargs -r sudo docker stop
+        //         sudo docker ps -aq | xargs -r sudo docker rm
 
-                # Remove all Docker images
-                sudo docker images -aq | xargs -r sudo docker rmi -f
-                """
-            }
-        }
+        //         # Remove all Docker images
+        //         sudo docker images -aq | xargs -r sudo docker rmi -f
+        //         """
+        //     }
+        // }
 
         stage('Retrieve Git Tag') {
             steps {

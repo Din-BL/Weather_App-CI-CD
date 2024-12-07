@@ -1,9 +1,6 @@
 pipeline {
-    // agent {
-    //     label 'agent'
-    // }
-    agent { label 'aws-dynamic-agent' } 
 
+    agent { label 'aws-dynamic-agent' } 
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
@@ -13,9 +10,7 @@ pipeline {
         SONARQUBE_URL         = 'http://10.0.135.98:9000'
         SONARQUBE_TOKEN       = credentials('SonarQube-Token')
     }
-
-    stages {
-        // stage('Clean') {
+  // stage('Clean') {
         //     steps {
         //         echo 'Cleaning up all Docker containers and images'
         //         sh """
@@ -28,6 +23,7 @@ pipeline {
         //         """
         //     }
         // }
+    stages {
 
         stage('Retrieve Git Tag') {
             steps {

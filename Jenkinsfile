@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        SSH_KEY               = credentials('SSH_Master-Node')
+        // SSH_KEY               = credentials('SSH_Master-Node')
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
         SONARQUBE_URL         = 'http://10.0.135.98:9000'
@@ -85,9 +85,9 @@ pipeline {
     }
 
     post {
-        always {
-            cleanWs()
-        }
+        // always {
+        //     cleanWs()
+        // }
 
         success {
             echo 'Pipeline completed successfully. Updating resources...'

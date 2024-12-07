@@ -10,7 +10,7 @@ pipeline {
         SSH_KEY               = credentials('SSH_Master-Node')
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
-        SONARQUBE_URL         = 'http://10.0.11.210:9000'
+        SONARQUBE_URL         = 'http://10.0.135.98:9000'
         SONARQUBE_TOKEN       = credentials('SonarQube-Token')
     }
 

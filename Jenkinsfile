@@ -1,5 +1,4 @@
 pipeline {
-
     agent { label 'aws-dynamic-agent' } 
 
     environment {
@@ -22,30 +21,33 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo 'Running SonarQube analysis...'
-                withSonarQubeEnv('SonarQube') { 
-                    sh """
-                    /opt/sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.projectKey=CI-CD-Weather_App \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${SONARQUBE_URL} \
-                        -Dsonar.token=${SONARQUBE_TOKEN}
-                    """
+        stage('Parallel Tasks') {
+            parallel {
+                stage('SonarQube Analysis') {
+                    steps {
+                        echo 'Running SonarQube analysis...'
+                        withSonarQubeEnv('SonarQube') { 
+                            sh """
+                            /opt/sonar-scanner/bin/sonar-scanner \
+                                -Dsonar.projectKey=CI-CD-Weather_App \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=${SONARQUBE_URL} \
+                                -Dsonar.token=${SONARQUBE_TOKEN}
+                            """
+                        }
+                    }
                 }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
-                sh """
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install -r requirements.txt
-                python3 test_app.py
-                """
+                stage('Test') {
+                    steps {
+                        echo 'Running tests...'
+                        sh """
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                        python3 test_app.py
+                        """
+                    }
+                }
             }
         }
 

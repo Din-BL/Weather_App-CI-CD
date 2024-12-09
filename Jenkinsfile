@@ -4,25 +4,12 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        // SSH_KEY               = credentials('SSH_Master-Node')
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
         SONARQUBE_URL         = 'http://10.0.135.98:9000'
         SONARQUBE_TOKEN       = credentials('SonarQube-Token')
     }
-  // stage('Clean') {
-        //     steps {
-        //         echo 'Cleaning up all Docker containers and images'
-        //         sh """
-        //         # Stop and remove all running containers
-        //         sudo docker ps -aq | xargs -r sudo docker stop
-        //         sudo docker ps -aq | xargs -r sudo docker rm
-
-        //         # Remove all Docker images
-        //         sudo docker images -aq | xargs -r sudo docker rmi -f
-        //         """
-        //     }
-        // }
+    
     stages {
 
         stage('Retrieve Git Tag') {
@@ -85,9 +72,6 @@ pipeline {
     }
 
     post {
-        // always {
-        //     cleanWs()
-        // }
 
         success {
             echo 'Pipeline completed successfully. Updating resources...'

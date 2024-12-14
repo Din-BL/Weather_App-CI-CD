@@ -12,21 +12,27 @@ pipeline {
         stage('Branch Check') {
             steps {
                 script {
-                    // שימוש בברירת מחדל אם BRANCH_NAME ריק
+                    // שימוש במשתנה branchName עם ברירת מחדל
                     def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'unknown'
 
                     if (branchName == 'unknown') {
-                        echo 'Branch name is not available.'
+                        echo 'Branch name is not defined!'
                         error 'Pipeline cannot proceed without a branch name.'
-                    } else if (branchName == 'main' || branchName == 'origin/main') {
+                    } else if (branchName.contains('main')) {
                         echo 'You are on the main branch!'
-                    } else if (branchName.startsWith('feature/') || branchName.startsWith('origin/feature/')) {
+                    } else if (branchName.contains('feature/')) {
                         echo 'You are on a feature branch!'
                     } else {
                         echo "You are on branch: ${branchName}"
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+            echo 'Cleaning workspace...'
+            cleanWs() // מחיקת כל הקבצים מה-Workspace
         }
     }
 }

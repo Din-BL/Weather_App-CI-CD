@@ -83,22 +83,26 @@ pipeline {
     }
 
     post {
-
         success {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo 'Pipeline completed successfully. Updating resources...'
-                updateHelmChart(env.IMAGE_TAG)
-                sendSlackNotification("Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}")
+            script {
+                if (env.BRANCH_NAME != null && !env.BRANCH_NAME.startsWith('feature')) {
+                    echo 'Pipeline completed successfully. Updating resources...'
+                    updateHelmChart(env.IMAGE_TAG)
+                    sendSlackNotification("Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}")
+                } else {
+                    echo 'Skipping post actions for feature branch.'
+                }
             }
         }
 
         failure {
-            steps {
-                echo 'Pipeline failed.'
-                sendSlackNotification("Pipeline failed. Image tag: ${env.IMAGE_TAG}")
+            script {
+                if (env.BRANCH_NAME != null && !env.BRANCH_NAME.startsWith('feature')) {
+                    echo 'Pipeline failed.'
+                    sendSlackNotification("Pipeline failed. Image tag: ${env.IMAGE_TAG}")
+                } else {
+                    echo 'Skipping failure post actions for feature branch.'
+                }
             }
         }
     }

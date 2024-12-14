@@ -12,8 +12,10 @@ pipeline {
         stage('Branch Check') {
             steps {
                 script {
-                    // שימוש במשתנה branchName עם ברירת מחדל
+                    // קביעת שם ברירת מחדל אם BRANCH_NAME או GIT_BRANCH לא מוגדרים
                     def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'unknown'
+
+                    echo "Branch name resolved as: ${branchName}"
 
                     if (branchName == 'unknown') {
                         echo 'Branch name is not defined!'

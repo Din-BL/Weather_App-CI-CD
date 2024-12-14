@@ -4,7 +4,7 @@ pipeline {
         stage('Debug Environment') {
             steps {
                 script {
-                    echo "Available environment variables:"
+                    echo "Listing all environment variables:"
                     sh 'env | sort'
                 }
             }
@@ -12,12 +12,12 @@ pipeline {
         stage('Branch Check') {
             steps {
                 script {
-                    // נסה להשתמש ב-BRANCH_NAME או GIT_BRANCH
-                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                    // שימוש בברירת מחדל אם BRANCH_NAME ריק
+                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'unknown'
 
-                    if (branchName == null || branchName.isEmpty()) {
-                        echo 'Branch name is not defined!'
-                        error 'Pipeline cannot continue without a branch name.'
+                    if (branchName == 'unknown') {
+                        echo 'Branch name is not available.'
+                        error 'Pipeline cannot proceed without a branch name.'
                     } else if (branchName == 'main' || branchName == 'origin/main') {
                         echo 'You are on the main branch!'
                     } else if (branchName.startsWith('feature/') || branchName.startsWith('origin/feature/')) {

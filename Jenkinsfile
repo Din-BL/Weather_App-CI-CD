@@ -1,17 +1,20 @@
 pipeline {
-    agent { label 'aws-dynamic-agent' } 
+    agent { label 'aws-dynamic-agent' }  
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
-        SONARQUBE_URL         = 'http://10.0.135.98:9000'
+        SONARQUBE_URL         = 'http://***********:9000'
         SONARQUBE_TOKEN       = credentials('SonarQube-Token')
     }
     
     stages {
 
         stage('Retrieve Git Tag') {
+            when {
+                branch 'main'
+            }
             steps {
                 echo 'Retrieving Git Tag...'
                 script {
@@ -46,15 +49,15 @@ pipeline {
                         pip install -r requirements.txt
                         python3 test_app.py
                         """
-                        // echo 'Running integration tests...'
-                        // python3 app.py
-                        // python3 selenium_test.py
                     }
                 }
             }
         }
 
         stage('Build') {
+            when {
+                branch 'main'
+            }
             steps {
                 echo 'Building Docker image...'
                 sh """
@@ -65,6 +68,9 @@ pipeline {
         }
 
         stage('Push to Docker Hub') {
+            when {
+                branch 'main'
+            }
             steps {
                 echo 'Pushing Docker image to Docker Hub...'
                 sh """
@@ -79,14 +85,21 @@ pipeline {
     post {
 
         success {
-            echo 'Pipeline completed successfully. Updating resources...'
-            updateHelmChart(env.IMAGE_TAG)
-            sendSlackNotification("Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}")
+            when {
+                branch 'main'
+            }
+            steps {
+                echo 'Pipeline completed successfully. Updating resources...'
+                updateHelmChart(env.IMAGE_TAG)
+                sendSlackNotification("Pipeline completed successfully. Image tag: ${env.IMAGE_TAG}")
+            }
         }
 
         failure {
-            echo 'Pipeline failed.'
-            sendSlackNotification("Pipeline failed. Image tag: ${env.IMAGE_TAG}")
+            steps {
+                echo 'Pipeline failed.'
+                sendSlackNotification("Pipeline failed. Image tag: ${env.IMAGE_TAG}")
+            }
         }
     }
 }
@@ -94,7 +107,6 @@ pipeline {
 def updateHelmChart(imageTag) {
     withCredentials([string(credentialsId: 'GitHub_PAT', variable: 'GIT_TOKEN')]) {
         sh """
-        # Clone the Helm chart repo or pull the latest changes
         if [ ! -d Helm-Charts ]; then
             git clone https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git
         else
@@ -104,7 +116,6 @@ def updateHelmChart(imageTag) {
             cd ..
         fi
 
-        # Update the Docker image tag in the Helm chart
         cd Helm-Charts
         sed -i 's/tag: .*/tag: ${imageTag}/g' values.yaml
         git config user.name "Din"

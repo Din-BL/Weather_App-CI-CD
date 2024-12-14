@@ -5,7 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         GITHUB_TOKEN          = credentials('GitHub_PAT')
         SLACK_TOKEN           = credentials('Slack_Token')
-        SONARQUBE_URL         = 'http://***********:9000'
+        SONARQUBE_URL         = 'http://10.0.135.98:9000'
         SONARQUBE_TOKEN       = credentials('SonarQube-Token')
     }
     

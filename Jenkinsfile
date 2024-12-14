@@ -1,5 +1,5 @@
 pipeline {
-    agent any 
+    agent { label 'aws-dynamic-agent' }  
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')

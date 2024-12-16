@@ -49,7 +49,7 @@ pipeline {
                         . venv/bin/activate
                         pip install -r requirements.txt
                         python3 test_app.py
-                        python3 app.py
+                        nohup python3 app.py &
                         python3 selenium_test.py
                         """
                     }

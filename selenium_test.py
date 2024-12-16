@@ -16,22 +16,26 @@ class WeatherAppTests(unittest.TestCase):
         chrome_options.add_argument("--headless")  # Run in headless mode
         # Required for running as root
         chrome_options.add_argument("--no-sandbox")
-        # Overcome limited resource problems
+        # Overcome limited resources
         chrome_options.add_argument("--disable-dev-shm-usage")
         # Disable GPU acceleration
         chrome_options.add_argument("--disable-gpu")
         # Ensure consistent resolution
         chrome_options.add_argument("--window-size=1920x1080")
 
+        # Specify the location of the Google Chrome binary
+        chrome_options.binary_location = "/usr/bin/google-chrome"
+
         # Path to ChromeDriver
-        chrome_driver_path = "/usr/local/bin/chromedriver"
+        chrome_driver_path = "/usr/bin/chromedriver"
         if not os.path.exists(chrome_driver_path):
             raise FileNotFoundError(
-                "ChromeDriver not found. Ensure it is installed in /usr/local/bin.")
+                "ChromeDriver not found. Ensure it is installed in /usr/bin.")
 
         # Initialize WebDriver
-        self.driver = webdriver.Chrome(service=Service(
-            chrome_driver_path), options=chrome_options)
+        self.driver = webdriver.Chrome(
+            service=Service(chrome_driver_path), options=chrome_options
+        )
         # Ensure the app is accessible
         self.driver.get('http://localhost:5000')
 
@@ -46,8 +50,8 @@ class WeatherAppTests(unittest.TestCase):
         # Verify that temperature is displayed
         temp_element = self.driver.find_element(
             By.XPATH, '//h2[contains(text(),"°")]')
-        self.assertTrue(temp_element.is_displayed(
-        ), "Temperature element should be displayed for valid location.")
+        self.assertTrue(temp_element.is_displayed(),
+                        "Temperature element should be displayed for valid location.")
 
     def test_negative_location_response(self):
         """Test an invalid location and verify error handling."""

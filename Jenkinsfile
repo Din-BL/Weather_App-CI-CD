@@ -13,17 +13,19 @@ pipeline {
     stages {
 
         stage('Retrieve Git Tag') {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo 'Retrieving Git Tag...'
-                script {
-                    env.IMAGE_TAG = sh(script: "git describe --tags", returnStdout: true).trim()
-                    echo "Git Tag: ${env.IMAGE_TAG}"
-                }
-            }
+    when {
+        branch 'main'
+    }
+    steps {
+        echo 'Retrieving Git Tag...'
+        script {
+            sh 'git fetch --tags' // Ensure tags are fetched
+            env.IMAGE_TAG = sh(script: "git describe --tags", returnStdout: true).trim()
+            echo "Git Tag: ${env.IMAGE_TAG}"
         }
+    }
+}
+
 
         // stage('Parallel Tasks') {
         //     parallel {

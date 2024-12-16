@@ -1,10 +1,6 @@
 # Exclude specific files
 weather_app.log
 history
-# terraform
-*.tfstate
-*.tfstate.*
-.terraform.lock.hcl
 helm_chart
 # ArgoCD
 .env
@@ -19,4 +15,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Ignore Terraform provider binaries
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
 

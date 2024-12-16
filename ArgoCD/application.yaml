@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: weather-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Din-BL/Helm-Charts
+    targetRevision: main
+    path: .
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true             
+      selfHeal: true
+

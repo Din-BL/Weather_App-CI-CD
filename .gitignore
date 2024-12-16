@@ -1,9 +1,9 @@
 # Exclude specific files
 weather_app.log
 history
-terraform
+# terraform
 helm_chart
-ArgoCD
+# ArgoCD
 .env
 
 # Exclude virtual environment

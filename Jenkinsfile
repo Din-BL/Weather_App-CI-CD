@@ -12,19 +12,23 @@ pipeline {
     
     stages {
 
-        stage('Retrieve Git Tag') {
+    stage('Retrieve Latest Git Tag') {
     when {
         branch 'main'
     }
     steps {
-        echo 'Retrieving Git Tag...'
+        echo 'Fetching the latest Git Tag...'
         script {
-            sh 'git fetch --tags' // Ensure tags are fetched
-            env.IMAGE_TAG = sh(script: "git describe --tags", returnStdout: true).trim()
-            echo "Git Tag: ${env.IMAGE_TAG}"
+            // Fetch only the latest tag
+            sh 'git fetch --tags --depth=1'
+            
+            // Retrieve the latest tag
+            env.IMAGE_TAG = sh(script: "git describe --tags --abbrev=0", returnStdout: true).trim()
+            echo "Latest Git Tag: ${env.IMAGE_TAG}"
         }
     }
 }
+
 
 
         // stage('Parallel Tasks') {

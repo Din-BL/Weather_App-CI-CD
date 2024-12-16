@@ -2,6 +2,9 @@
 weather_app.log
 history
 # terraform
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
 helm_chart
 # ArgoCD
 .env

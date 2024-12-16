@@ -1,10 +1,10 @@
 # Exclude specific files
-token
 weather_app.log
 history
 terraform
 helm_chart
 ArgoCD
+.env
 
 # Exclude virtual environment
 venv/

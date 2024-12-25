@@ -1,3 +1,13 @@
+terraform {
+  backend "s3" {
+    bucket         = "terraform-files-eks"
+    key            = "terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
+  }
+}
+
 # Provider Configuration
 provider "aws" {
   region = "us-east-1"
@@ -19,8 +29,8 @@ module "eks" {
   subnet_ids      = ["subnet-09e17bf8b2a85fd8c", "subnet-088f3d9bfefb5f4f5"]
 
   # Enable public and private endpoints
-  cluster_endpoint_private_access = true
-  cluster_endpoint_public_access  = true
+  cluster_endpoint_private_access      = true
+  cluster_endpoint_public_access       = true
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 }
 
@@ -33,8 +43,8 @@ resource "aws_iam_role" "eks_node_role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
         Principal = {
           Service = "ec2.amazonaws.com"
         }

@@ -74,13 +74,71 @@ pipeline {
             }
             steps {
                 echo 'Pushing Docker image to Docker Hub...'
-                sh """
-                echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
-                sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
-                sudo docker push dinbl/weather_app:latest
-                """
+                docker.withRegistry('', 'dockerhub-credentials') {
+                sh "docker build -t dinbl/weather_app:${env.IMAGE_TAG} ."
+                sh "docker push dinbl/weather_app:${env.IMAGE_TAG}"
+                }
+                // sh """
+                // echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u dinbl --password-stdin
+                // sudo docker push dinbl/weather_app:${env.IMAGE_TAG}
+                // sudo docker push dinbl/weather_app:latest
+                // """
             }
         }
+
+        stage('Artifact Validation') {
+    steps {
+        parallel {
+            stage('Validate Docker Image') {
+                steps {
+                    echo 'Validating Docker Image...'
+                    script {
+                        try {
+                            // Pull the image to ensure it's pushed correctly
+                            sh "docker pull dinbl/weather_app:${env.IMAGE_TAG}"
+
+                            // Check if the image can be listed locally
+                            def imageExists = sh(script: "docker images -q dinbl/weather_app:${env.IMAGE_TAG}", returnStdout: true).trim()
+                            if (!imageExists) {
+                                error "Docker Image not found locally: dinbl/weather_app:${env.IMAGE_TAG}"
+                            }
+
+                            echo "Docker Image validation succeeded!"
+                        } catch (Exception e) {
+                            error "Docker Image validation failed: ${e.message}"
+                        }
+                    }
+                }
+            }
+            stage('Security Scan with Snyk') {
+                steps {
+                    echo 'Running security scan with Snyk...'
+                    script {
+                        try {
+                            // Ensure Snyk CLI is installed
+                            sh 'which snyk || curl -sL https://snyk.io/install | bash'
+
+                            // Authenticate with Snyk
+                            withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+                                sh 'snyk auth ${SNYK_TOKEN}'
+                            }
+
+                            // Run Snyk scan on the Docker Image
+                            sh "snyk container test dinbl/weather_app:${env.IMAGE_TAG} --severity-threshold=high || true"
+
+                            echo "Snyk security scan completed!"
+                        } catch (Exception e) {
+                            error "Snyk security scan failed: ${e.message}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
     }
 
     post {
@@ -112,15 +170,7 @@ pipeline {
 def updateHelmChart(imageTag) {
     withCredentials([string(credentialsId: 'GitHub_PAT', variable: 'GIT_TOKEN')]) {
         sh """
-        if [ ! -d Helm-Charts ]; then
-            git clone https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git
-        else
-            cd Helm-Charts
-            git reset --hard
-            git pull origin main
-            cd ..
-        fi
-
+        git clone https://${GIT_TOKEN}@github.com/Din-BL/Helm-Charts.git
         cd Helm-Charts
         sed -i 's/tag: .*/tag: ${imageTag}/g' values.yaml
         git config user.name "Din"

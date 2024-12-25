@@ -36,7 +36,6 @@ REQUEST_COUNT = Counter('flask_app_request_count',
 CITY_LOOKUP_COUNT = Counter(
     'city_lookup_count', 'Total number of times each city has been looked at', ['city'])
 
-
 @app.before_request
 def before_request():
     REQUEST_COUNT.labels(request.method, request.path).inc()
@@ -47,10 +46,8 @@ def before_request():
 def metrics():
     return generate_latest(REGISTRY)
 
-
 def remove_commas(input_string):
     return input_string.replace(',', '')
-
 
 def convert_date_to_day(date_str):
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
@@ -58,7 +55,6 @@ def convert_date_to_day(date_str):
     return day_of_week
 
     # Function to save search query data to a JSON file
-
 
 def save_search_to_file(location, data):
     # Create a dictionary for the data you want to store
@@ -84,13 +80,11 @@ def save_search_to_file(location, data):
     # Return the file name
     return file_name
 
-
 @app.route('/')
 def index():
     app.logger.debug('Rendering index page')
     bg_color = os.getenv('BG_COLOR', '#ffffff')
     return render_template('index.html', weather_data=[], file_name=None, bg_color=bg_color)
-
 
 def current_Data(data):
     first_two_items = data[:2]
@@ -99,7 +93,6 @@ def current_Data(data):
         merged_dict.update(item)
     merged_dict.pop('data_conditions', None)
     return merged_dict
-
 
 def pushed_to_DB(data):
     item = current_Data(data)
@@ -202,7 +195,6 @@ def error():
 
 # Route to handle file download
 
-
 @app.route('/download/<filename>', methods=['GET'])
 def download_file(filename):
     file_path = os.path.join('history', filename)
@@ -212,7 +204,6 @@ def download_file(filename):
     else:
         app.logger.error(f"File {filename} not found")
         return redirect(url_for('error'))
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

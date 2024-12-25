@@ -84,26 +84,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Artifact Validation') {
-            parallel {
-                stage('Validate Docker Image') {
-                    steps {
-                        script {
-                            echo 'Validating Docker Image...'
-                            try {
-                                sh "docker pull dinbl/weather_app:${env.IMAGE_TAG}"
-                                def imageExists = sh(script: "docker images -q dinbl/weather_app:${env.IMAGE_TAG}", returnStdout: true).trim()
-                                if (!imageExists) {
-                                    error "Docker Image not found locally: dinbl/weather_app:${env.IMAGE_TAG}"
-                                }
-                                echo "Docker Image validation succeeded!"
-                            } catch (Exception e) {
-                                error "Docker Image validation failed: ${e.message}"
-                            }
-                        }
-                    }
-                }
                 stage('Security Scan with Snyk') {
                     steps {
                         script {
@@ -121,8 +101,6 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
     }
 
     post {

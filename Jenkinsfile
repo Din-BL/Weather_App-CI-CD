@@ -89,7 +89,6 @@ pipeline {
                         script {
                             echo 'Running security scan with Snyk...'
                             try {
-                                sh 'which snyk || curl -sL https://snyk.io/install | bash'
                                 withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
                                     sh 'snyk auth ${SNYK_TOKEN}'
                                 }

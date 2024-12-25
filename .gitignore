@@ -2,7 +2,7 @@
 weather_app.log
 history
 helm_chart
-.env
+# .env
 ArgoCD
 
 # Exclude virtual environment

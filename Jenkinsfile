@@ -84,22 +84,25 @@ pipeline {
                 }
             }
         }
-                stage('Security Scan with Snyk') {
-                    steps {
-                        script {
-                            echo 'Running security scan with Snyk...'
-                            try {
-                                withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
-                                    sh 'snyk auth ${SNYK_TOKEN}'
-                                }
-                                sh "snyk container test dinbl/weather_app:${env.IMAGE_TAG} --severity-threshold=high"
-                                echo "Snyk security scan completed!"
-                            } catch (Exception e) {
-                                error "Snyk security scan failed: ${e.message}"
-                            }
-                        }
+
+        stage('Security Scan with Snyk') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    echo 'Running security scan with Snyk...'
+                    withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+                        sh 'snyk auth ${SNYK_TOKEN}'
+                    }
+                    def snykStatus = sh(script: "snyk container test dinbl/weather_app:${env.IMAGE_TAG} --severity-threshold=high --file=Dockerfile", returnStatus: true)
+                    if (snykStatus != 0) {
+                        echo "Snyk found vulnerabilities. Review and address them."
+                        currentBuild.result = 'UNSTABLE'
                     }
                 }
+            }
+        }
     }
 
     post {

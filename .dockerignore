@@ -1,0 +1,9 @@
+# Ignore everything by default
+*
+
+# Allow specific files and directories
+!app.py
+!.env
+!templates/
+!static/
+!requirements.txt

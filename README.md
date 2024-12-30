@@ -2,28 +2,6 @@
 
 ---
 
-graph TD
-    subgraph CI/CD Pipeline
-        A[Code Changes in GitLab] --> B[Trigger CI/CD Pipeline via Webhook]
-        B --> C[Build Stage: Jenkins builds Docker image]
-        C --> D[Test Stage: Automated tests validate functionality]
-        D --> E[Push Stage: Push Docker image to Docker Hub]
-        E --> F[Deploy Stage: Argo CD deploys to EKS]
-    end
-
-    subgraph Infrastructure Provisioning
-        G[Terraform provisions custom VPC with subnets]
-        G --> H[EKS cluster deployed within VPC]
-        H --> F
-    end
-
-    subgraph Continuous Deployment
-        I[Argo CD monitors Kubernetes manifests]
-        I --> J[Sync changes to EKS cluster]
-        J --> K[Blue-Green Deployment for zero-downtime updates]
-    end
-
-
 ## **Overview**
 
 This project is a Python-based application with a CI/CD pipeline designed for seamless automation of development, testing, and deployment processes. It integrates key DevOps tools like Jenkins, Docker, Terraform, EKS (Elastic Kubernetes Service), and Argo CD to provide a scalable, automated deployment workflow.
@@ -139,3 +117,28 @@ argocd app sync <app-name>
 ---
 
 This project simplifies the deployment process while ensuring scalability and reliability for Python applications. 🚀
+
+
+```mermaid
+graph TD
+subgraph CI/CD Pipeline
+    A[Code Changes in GitLab] --> B[Trigger CI/CD Pipeline via Webhook]
+    B --> C[Build Stage: Jenkins builds Docker image]
+    C --> D[Test Stage: Automated tests validate functionality]
+    D --> E[Push Stage: Push Docker image to Docker Hub]
+    E --> F[Deploy Stage: Argo CD deploys to EKS]
+end
+
+subgraph Infrastructure Provisioning
+    G[Terraform provisions custom VPC with subnets]
+    G --> H[EKS cluster deployed within VPC]
+    H --> F
+end
+
+subgraph Continuous Deployment
+    I[Argo CD monitors Kubernetes manifests]
+    I --> J[Sync changes to EKS cluster]
+    J --> K[Blue-Green Deployment for zero-downtime updates]
+end
+
+

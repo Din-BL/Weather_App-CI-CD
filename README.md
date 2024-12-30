@@ -1,144 +1,134 @@
-# **Python CI/CD Application with Terraform, EKS, and Argo CD**
+# EKS-Based CI/CD Pipeline Architecture
 
----
+## Overview
+This project demonstrates a robust CI/CD pipeline architecture deployed on AWS using Kubernetes (EKS) and Terraform. The pipeline integrates GitLab, Jenkins, SonarQube, Snyk, Docker Hub, Argo CD, and Slack to automate code management, testing, deployment, and notification processes.
 
-## **Overview**
+## Architecture Details
 
-This project is a Python-based application with a CI/CD pipeline designed for seamless automation of development, testing, and deployment processes. It integrates key DevOps tools like Jenkins, Docker, Terraform, EKS (Elastic Kubernetes Service), and Argo CD to provide a scalable, automated deployment workflow.
+### VPC and Infrastructure
+- **Custom VPC**: Contains both private and public subnets spread across two Availability Zones (AZs).
+  - **AZ1**:
+    - **Private Subnet**: Hosts the following components running in containers:
+      - GitLab (Version Control)
+      - Jenkins (CI Server)
+      - SonarQube (Static Code Analysis)
+      - Snyk (Security Scanning)
+      - Jenkins Dynamic Agent (for pipeline execution)
+  - **AZ2**:
+    - **Private Subnet**: Also contains EKS node groups running application pods.
+  - **Both AZs**:
+    - EKS Node Groups are deployed across both AZs for high availability and scalability.
+  - **Public Subnet**: Contains the Application Load Balancer (ALB) for routing external traffic.
 
----
+### CI/CD Pipeline
+The CI/CD process is implemented in Jenkins and follows these stages:
+1. **SCM**: GitLab handles source code changes, triggering the pipeline via webhooks.
+2. **Static Code Analysis**: Snyk and SonarQube validate code quality and security.
+3. **Unit Tests**: Automated tests ensure application functionality.
+4. **Build**: Jenkins builds the Docker image for the application.
+5. **Publish**: The Docker image is pushed to Docker Hub.
+6. **Security Scan**: Snyk scans the Docker image for vulnerabilities.
+7. **Kubernetes Manifests Update**: The Kubernetes manifests in GitLab are updated to reflect the new deployment version.
+8. **Notification**: Slack notifications are sent to the team for updates.
 
-## **Table of Contents**
+### Continuous Deployment
+- **Argo CD**: Monitors the Kubernetes manifests in the GitLab repository and applies updates to the EKS cluster.
+- **Deployment Strategy**: Uses Blue-Green Deployment to ensure zero-downtime updates.
 
-1. [Features](#features)
-2. [Workflow Overview](#workflow-overview)
-3. [Project Structure](#project-structure)
-4. [Requirements](#requirements)
-5. [Setup and Usage](#setup-and-usage)
-6. [Benefits](#benefits)
+### Infrastructure Provisioning
+- **Terraform**:
+  - Provisions the custom VPC, subnets, and EKS cluster.
+  - Creates the EKS node groups across both AZs in the private subnets.
 
----
+## Key Benefits
+- **Automation**: Streamlined CI/CD processes with minimal manual intervention.
+- **Scalability**: EKS ensures high availability and scalability for application workloads.
+- **Security**: Snyk and SonarQube provide comprehensive code quality and security checks.
+- **Zero Downtime**: Blue-Green Deployment strategy minimizes risks during updates.
+- **Visibility**: Slack notifications and Argo CD dashboards offer real-time visibility.
 
-## **Features**
+## Tools and Technologies
+- **GitLab**: Source code management and version control.
+- **Jenkins**: CI server for automating builds and tests.
+- **SonarQube**: Static code analysis.
+- **Snyk**: Security vulnerability detection.
+- **Docker Hub**: Docker image registry.
+- **Argo CD**: Continuous deployment to Kubernetes.
+- **AWS EKS**: Managed Kubernetes service.
+- **Terraform**: Infrastructure as code tool.
+- **Slack**: Team collaboration and notifications.
 
-- **Python Application**: Implements core functionality using Python.
-- **CI/CD Automation**: Jenkins pipeline automates testing, building, and deploying the application.
-- **Containerization**: Dockerized for consistent deployment across environments.
-- **Infrastructure as Code**: Terraform provisions a custom VPC, subnets, and an EKS cluster.
-- **Kubernetes Management**: EKS manages scalable container orchestration.
-- **Continuous Deployment**: Argo CD synchronizes Kubernetes manifests with the EKS cluster.
+## Setup Instructions
+1. **Provision Infrastructure**:
+   - Use the provided Terraform scripts to create the VPC, subnets, and EKS cluster.
+2. **Set Up CI/CD Pipeline**:
+   - Configure GitLab repository and Jenkins jobs.
+   - Integrate SonarQube, Snyk, and Docker Hub.
+3. **Deploy Application**:
+   - Commit Kubernetes manifests to GitLab.
+   - Ensure Argo CD is monitoring the manifests.
+4. **Monitor and Notify**:
+   - Validate updates on the EKS cluster.
+   - Monitor notifications via Slack.
 
----
-
-## **Workflow Overview**
-
-1. **Code Changes**: Developers commit code to a GitLab repository, triggering the CI/CD pipeline via a webhook.
-2. **CI/CD Pipeline Stages**:
-   - **Build**: Jenkins builds a Docker image of the application.
-   - **Test**: Automated tests validate functionality.
-   - **Push**: The Docker image is pushed to a container registry (e.g., Docker Hub).
-   - **Deploy**: Argo CD deploys the updated Kubernetes manifests to EKS.
-3. **Infrastructure Provisioning**:
-   - Terraform provisions a custom VPC with public and private subnets.
-   - EKS is deployed within the VPC to manage Kubernetes workloads.
-4. **Continuous Deployment**:
-   - Argo CD automatically syncs changes in Kubernetes manifests to the EKS cluster.
-5. **Blue-Green Deployment**: Ensures zero-downtime updates during production deployments.
-
----
-
-## **Project Structure**
-
-- **`app.py`**: Main Python application file.
-- **`Dockerfile`**: Builds the application container.
-- **`Jenkinsfile`**: Defines CI/CD pipeline stages.
-- **`test/`**: Directory containing test files for validation.
-- **`terraform/`**: Directory with Terraform files for infrastructure provisioning.
-- **`k8s/`**: Kubernetes manifests for deploying the application.
-
----
-
-## **Requirements**
-
-- Python 3.8+
-- Jenkins
-- Docker
-- Terraform
-- Kubernetes CLI (`kubectl`)
-- Argo CD CLI
-
----
-
-## **Setup and Usage**
-
-### **1. Clone the Repository**
-
-```bash
-git clone <repository-url>
-```
-
-### **2. Set Up Infrastructure**
-
-Run Terraform commands to provision the required infrastructure:
-
-```bash
-cd terraform/
-terraform init
-terraform apply
-```
-
-### **3. Configure Jenkins Pipeline**
-
-- Add the `Jenkinsfile` to your Jenkins server.
-- Configure the pipeline with necessary credentials and environment variables.
-
-### **4. Deploy with Argo CD**
-
-Create and synchronize your application with Argo CD:
-
-```bash
-argocd app create <app-name> \
-  --repo <repo-url> \
-  --path <path-to-manifests> \
-  --dest-namespace <namespace> \
-  --dest-server <cluster-server>
-argocd app sync <app-name>
-```
-
----
-
-## **Benefits**
-
-- **Automation**: Fully automated CI/CD pipeline reduces manual effort.
-- **Scalability**: EKS provides a robust and scalable infrastructure for container orchestration.
-- **Reliability**: Argo CD ensures smooth and efficient deployments with automated synchronization.
-- **Efficiency**: Streamlined workflows for faster development and deployment cycles.
-
----
-
-This project simplifies the deployment process while ensuring scalability and reliability for Python applications. 🚀
+## Future Enhancements
+- Implement multi-region failover for enhanced availability.
+- Integrate advanced monitoring tools like Prometheus and Grafana.
+- Automate disaster recovery scenarios.
 
 
 ```mermaid
 graph TD
-subgraph CI/CD Pipeline
-    A[Code Changes in GitLab] --> B[Trigger CI/CD Pipeline via Webhook]
-    B --> C[Build Stage: Jenkins builds Docker image]
-    C --> D[Test Stage: Automated tests validate functionality]
-    D --> E[Push Stage: Push Docker image to Docker Hub]
-    E --> F[Deploy Stage: Argo CD deploys to EKS]
-end
+    subgraph VPC
+        subgraph AZ1
+            subgraph PrivateSubnet1
+                A["GitLab Container"]
+                B["Jenkins Container"]
+                C["SonarQube Container"]
+                D["Snyk Container"]
+                E["Jenkins Dynamic Agent"]
+            end
+            F["EKS Node Group"]
+        end
 
-subgraph Infrastructure Provisioning
-    G[Terraform provisions custom VPC with subnets]
-    G --> H[EKS cluster deployed within VPC]
-    H --> F
-end
+        subgraph AZ2
+            subgraph PrivateSubnet2
+                G["EKS Node Group"]
+            end
+        end
 
-subgraph Continuous Deployment
-    I[Argo CD monitors Kubernetes manifests]
-    I --> J[Sync changes to EKS cluster]
-    J --> K[Blue-Green Deployment for zero-downtime updates]
-end
+        subgraph PublicSubnet
+            H["Load Balancer (ALB)"]
+        end
+    end
+
+    subgraph CI/CD Pipeline
+        I["SCM: Code Changes in GitLab"] --> J["Trigger CI/CD Pipeline via Webhook"]
+        J --> K["Static Code Analysis: Snyk & SonarQube"]
+        K --> L["Unit Tests"]
+        L --> M["Build: Jenkins builds Docker Image"]
+        M --> N["Publish: Push Image to Docker Hub"]
+        N --> O["Snyk Scan"]
+        O --> P["Update Kubernetes Manifests in GitLab"]
+        P --> Q["Notify: Slack Notifications"]
+    end
+
+    subgraph Infrastructure Provisioning
+        R["Provision Custom VPC with Subnets"] --> S["Deploy EKS Cluster in VPC"]
+        S --> T["Node Groups Created Across AZ1 and AZ2"]
+    end
+
+    subgraph Continuous Deployment
+        U["Argo CD Monitors Kubernetes Manifests"]
+        U --> V["Sync Changes to EKS Cluster"]
+        V --> W["Blue-Green Deployment for Zero-Downtime Updates"]
+    end
+
+    M --> U
+    T --> F
+    T --> G
+    Q --> U
+
+
 
 
